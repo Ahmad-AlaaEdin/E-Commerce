@@ -1,33 +1,25 @@
-import express,{Request,Response} from "express"
-import { PrismaClient } from '@prisma/client';
+import express,{Request,Response,NextFunction} from "express"
 
-
-
+import morgan from 'morgan';
+import productRoutes from "./routes/productRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
 const app = express();
-const prisma = new PrismaClient();
 
-app.get("/api/v1/users", async(req:Request , res:Response) => {
-    try{
-        await prisma.user.create({
-            data:{
-                name:"Alice",
-                email:"alyx@gmail.com",
-                password:"123",
-        
-        }})
-    }
-    catch(err){
-        console.log(err)
-    }
-    
+app.use(morgan('dev'));
+app.use(express.json());
 
+app.use((req:Request,res:Response,next:NextFunction)=>{
+    console.log(req.url);
+    next();
+})
 
-    res.send("Hello World");
-});
+app.use("/api/v1/product",productRoutes);
+app.use("/api/v1/category",categoryRoutes);
 
-
-
-
+app.use((error:Error,req:Request,res:Response,next:NextFunction)=>{
+console.log(error);
+res.json({message:"Internal Server Error"});
+})
 
 
 

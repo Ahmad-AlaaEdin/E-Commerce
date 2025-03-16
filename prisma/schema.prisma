@@ -33,7 +33,19 @@ model Address {
 model Category {
   id       Int       @id @default(autoincrement())
   name     String    @unique
+  slug     String    @unique
+  description String?
   products Product[]
+  subCategories SubCategory[]
+}
+model SubCategory {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  slug     String    @unique
+  description String?
+  categoryId  Int       
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
 }
 
 model Product {
