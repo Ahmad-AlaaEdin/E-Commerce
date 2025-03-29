@@ -2,20 +2,22 @@ import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { SubCategory } from "@prisma/client";
 import AppError from "../utils/appError";
+import slugify from "slugify";
 
 export const createSubCategory = async (req: Request, res: Response) => {
+  req.body.slug = slugify(req.body.name, { lower: true, strict: true });
+  req.body.categoryId = Number(req.params.categoryId);
   const category: SubCategory = await prisma.subCategory.create({
     data: req.body,
   });
   res.status(201).json(category);
 };
 
-export const getCategories = async (req: Request, res: Response) => {
-  const categories: SubCategory[] = await prisma.subCategory.findMany();
-  res.json(categories);
-};
+
 export const getSubCategories = async (req: Request, res: Response) => {
-  const categories: SubCategory[] = await prisma.subCategory.findMany();
+  const categories: SubCategory[] = await prisma.subCategory.findMany({
+    where: { categoryId: Number(req.params.categoryId) },
+  });
   res.json(categories);
 };
 export const getSubCategory = async (req: Request, res: Response) => {
@@ -35,6 +37,7 @@ export const deleteSubCategory = async (req: Request, res: Response) => {
 
 export const updateSubCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
+  if(req.body.name) req.body.slug = slugify(req.body.name, { lower: true, strict: true });
   const category: SubCategory = await prisma.subCategory.update({
     where: { id: Number(id) },
     data: req.body,

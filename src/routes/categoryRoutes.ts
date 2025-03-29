@@ -10,7 +10,7 @@ categoryRoutes.get('/:id', getCategory);
 categoryRoutes.get('/', getCategories);
 categoryRoutes.delete('/:id', deleteCategory);
 categoryRoutes.patch('/:id', updateCategory);
-categoryRoutes.all('/:id/subCategory',subCategoryRoutes)
+categoryRoutes.use('/:categoryId/subCategory',subCategoryRoutes)
 
 
 

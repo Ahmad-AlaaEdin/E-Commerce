@@ -1,20 +1,21 @@
-import {Router} from 'express'
-import { createSubCategory, getSubCategories, getSubCategory, deleteSubCategory, updateSubCategory } from '../controllers/subCategoryController';
+import { Router } from "express";
+import {
+  createSubCategory,
+  getSubCategories,
+  deleteSubCategory,
+  updateSubCategory,
+  getSubCategory,
+} from "../controllers/subCategoryController";
 
+const subCategoryRoutes: Router = Router({ mergeParams: true });
 
+subCategoryRoutes.get("/", getSubCategories);
+subCategoryRoutes.post("/", createSubCategory);
 
-const subCategoryRoutes:Router = Router({mergeParams:true});
-
-subCategoryRoutes.get('/',getSubCategories);
-subCategoryRoutes.get('/:id',getSubCategory);
-subCategoryRoutes.post('/',createSubCategory);
-subCategoryRoutes.delete('/:id',deleteSubCategory);
-subCategoryRoutes.patch('/:id',updateSubCategory);
-
-
-
-
-
-
+subCategoryRoutes
+  .route("/:id")
+  .get(getSubCategory)
+  .delete(deleteSubCategory)
+  .patch(updateSubCategory);
 
 export default subCategoryRoutes;
