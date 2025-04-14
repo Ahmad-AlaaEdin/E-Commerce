@@ -1,8 +1,40 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { Product } from "@prisma/client";
+import AppError from "../utils/appError";
 
 export const createProduct = async (req: Request, res: Response) => {
-  const product: Product = await prisma.product.create(req.body);
-  res.json(product);
+  const product: Product = await prisma.product.create({data:req.body});
+  res.status(201).json(product);
+};
+
+
+export const getAllProducts = async (req: Request, res: Response) => {
+  const products: Product[] = await prisma.product.findMany();
+  res.status(200).json(products);
+};
+
+
+export const getProductById = async (req: Request, res: Response) => {
+  const product: Product | null = await prisma.product.findUnique({
+    where: { id: Number(req.params.id) }, 
+  }) 
+  if (!product) throw new AppError("Product not found",404);
+  res.status(200).json(product);
+    
+  
+}
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  await prisma.product.delete({
+    where: { id: Number(req.params.id) },
+  }); 
+  res.status(204).json({});
+}
+export const updateProduct = async (req: Request, res: Response) => {
+  const product: Product = await prisma.product.update({
+    where: { id: Number(req.params.id) },
+    data: req.body,
+  });
+  res.status(200).json(product);
 };
