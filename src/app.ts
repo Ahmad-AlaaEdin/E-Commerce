@@ -1,10 +1,9 @@
 import express,{Request,Response,NextFunction} from "express"
-
-import morgan from 'morgan';
 import productRoutes from "./routes/productRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import subCategoryRoutes from "./routes/subCatgoryRoutes";
 import userRoutes from "./routes/userRoutes";
+import morgan from 'morgan';
 const app = express();
 
 app.use(morgan('dev'));

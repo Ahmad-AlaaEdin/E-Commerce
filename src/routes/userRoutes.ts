@@ -1,10 +1,11 @@
 import { Router } from "express";
-import {signup,login} from "../controllers/authController";
+import {signup,login,protect,updatePassword} from "../controllers/authController";
 const userRoutes:Router = Router();
 
 
 userRoutes.post('/signup',signup);
 userRoutes.post("/login",login);
+userRoutes.patch("/updatePsassword",protect,updatePassword)
 
 
 

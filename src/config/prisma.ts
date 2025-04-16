@@ -20,13 +20,17 @@ const prisma = new PrismaClient().$extends({
         if (args.data.password) {
           args.data.password = await bcrypt.hash(args.data.password, 12);
         }
+        args.data.passwordChangedAt=new Date();
+        console.log("hashed")
         return query(args);
+        
       },
 
       async update({ args, query }) {
         if (args.data.password && typeof args.data.password === 'string') {
           const hashedPassword = await bcrypt.hash(args.data.password, 12);
           args.data.password = hashedPassword;
+          console.log("hashed")
         }
         return query(args);
       },
