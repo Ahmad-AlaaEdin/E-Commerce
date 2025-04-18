@@ -10,11 +10,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   email     String   @unique
   password  String
   name      String
   role      Role     @default(USER)
+  active    Boolean  @default(true)
+  photo     String?
+  phone     String?
   createdAt DateTime @default(now())
   passwordChangedAt DateTime? 
   passwordResetToken String?
@@ -25,40 +28,40 @@ model User {
 }
 
 model Address {
-  id     Int    @id @default(autoincrement())
+  id     String  @id @default(uuid())
   street String
   city   String
   zip    String
-  userId Int    @unique 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String  @unique 
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  slug     String    @unique
+  id       String      @id @default(uuid())
+  name     String      @unique
+  slug     String      @unique
   description String?
   products Product[]
   subCategories SubCategory[]
 }
 model SubCategory {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  slug     String    @unique
+  id       String      @id @default(uuid())
+  name     String      @unique
+  slug     String      @unique
   description String?
-  categoryId  Int       
+  categoryId  String       
   category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   products    Product[]
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
+  id          String      @id @default(uuid())
   name        String
   price       Float
   description String
-  images      String[]  
-  categoryId  Int     
-  subCategoryId  Int?  
+  image      String  
+  categoryId  String     
+  subCategoryId  String?  
   category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull) 
   createdAt   DateTime  @default(now())
@@ -68,8 +71,8 @@ model Product {
   CartItems   CartItem[]
 }
 model Cart {
-  id        Int         @id @default(autoincrement())
-  userId    Int
+  id        String      @id @default(uuid())
+  userId    String
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
@@ -80,9 +83,9 @@ model Cart {
 }
 
 model CartItem {
-  id        Int       @id @default(autoincrement())
-  cartId    Int
-  productId Int
+  id        String    @id @default(uuid())
+  cartId    String
+  productId String
   quantity  Int       @default(1)
 
   cart      Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
@@ -93,8 +96,8 @@ model CartItem {
 
 
 model Order {
-  id        Int      @id @default(autoincrement())
-  userId    Int      
+  id        String    @id @default(uuid())
+  userId    String      
   total     Float
   status    OrderStatus @default(PENDING)
   createdAt DateTime @default(now())
@@ -106,9 +109,9 @@ model Order {
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int     
-  productId Int     
+  id        String   @id @default(uuid())
+  orderId   String     
+  productId String     
   quantity  Int     
   price     Float
 
@@ -117,8 +120,8 @@ model OrderItem {
 }
 
 model Payment {
-  id           Int     @id @default(autoincrement())
-  orderId      Int     @unique
+  id           String   @id @default(uuid())
+  orderId      String   @unique
   paymentMethod String
   transactionId String @unique
   status       PaymentStatus @default(PENDING)

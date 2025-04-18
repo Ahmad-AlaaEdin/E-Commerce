@@ -16,14 +16,14 @@ export const createSubCategory = async (req: Request, res: Response) => {
 
 export const getSubCategories = async (req: Request, res: Response) => {
   const categories: SubCategory[] = await prisma.subCategory.findMany({
-    where: { categoryId: Number(req.params.categoryId) },
+    where: { categoryId: req.params.categoryId },
   });
   res.json(categories);
 };
 export const getSubCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
   const category: SubCategory | null = await prisma.subCategory.findUnique({
-    where: { id: Number(id) },
+    where: { id: id },
   });
   if (!category) throw new AppError("SubCategory not found.", 404);
 
@@ -31,7 +31,7 @@ export const getSubCategory = async (req: Request, res: Response) => {
 };
 
 export const deleteSubCategory = async (req: Request, res: Response) => {
-  await prisma.subCategory.delete({ where: { id: Number(req.params.id) } });
+  await prisma.subCategory.delete({ where: { id: req.params.id } });
   res.status(204).send();
 };
 
@@ -39,7 +39,7 @@ export const updateSubCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
   if(req.body.name) req.body.slug = slugify(req.body.name, { lower: true, strict: true });
   const category: SubCategory = await prisma.subCategory.update({
-    where: { id: Number(id) },
+    where: { id: id },
     data: req.body,
   });
   res.status(200).json({ message: "Updated successfully", data: category });

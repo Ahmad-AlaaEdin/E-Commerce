@@ -33,3 +33,4 @@ class Cloudinary {
     }
   }
 }
+export default new Cloudinary();

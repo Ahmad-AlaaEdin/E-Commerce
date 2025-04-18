@@ -1,12 +1,12 @@
 import express from "express";
 import { protect } from "../controllers/authController";
-import { placeOrder, getMyOrders } from "../controllers/orderController";
+import { getMyAddress, upsertAddress } from "../controllers/addressController";
 
 const router = express.Router();
 
 router.use(protect);
 
-router.post("/", placeOrder);
-router.get("/", getMyOrders);
+router.get("/", getMyAddress);
+router.post("/", upsertAddress);
 
 export default router;

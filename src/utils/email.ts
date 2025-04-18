@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { User } from "@prisma/client";
 import ejs from 'ejs';
-import htmlToText from 'html-to-text';
+import {htmlToText} from 'html-to-text';
 
 class Email {
   to: string;
@@ -34,11 +34,11 @@ class Email {
 
     // 2) Define email options
     const mailOptions = {
-      from: process.env.EMAIL_FROM,
+      from: "ahmadalaaeldin@gmail.com",
       to: this.to,
       subject,
       html,
-      text: htmlToText.convert(html),
+      text: htmlToText(html),
     };
 
     // 3) Create a transport and send email

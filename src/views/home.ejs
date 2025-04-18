@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>E-Commerce Home</title>
+    <style>
+      body {
+        background: #f6f7fb;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #222;
+      }
+      .container {
+        max-width: 900px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+        padding: 32px 24px;
+      }
+      h1 {
+        font-weight: 700;
+        margin-bottom: 24px;
+      }
+      .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 24px;
+      }
+      .product {
+        background: #fafbfc;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .product img {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-bottom: 12px;
+      }
+      .product h3 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+      }
+      .product p {
+        margin: 0 0 12px 0;
+        color: #666;
+        font-size: 15px;
+      }
+      .product .price {
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+      .product button {
+        background: #222;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 20px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .product button:hover {
+        background: #444;
+      }
+      .cart-link {
+        float: right;
+        font-size: 16px;
+      }
+      .cart-link a {
+        color: #222;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('partials/header', { title: title }) %>
+    <div class="container" style="display: flex; gap: 32px;">
+      <!-- Sidebar Filters -->
+      <aside style="width: 220px; background: #fafbfc; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); padding: 24px 16px; height: fit-content;">
+        <h3 style="margin-top:0;">Categories</h3>
+        <ul id="categoryList" style="list-style:none;padding:0;margin:0 0 24px 0;">
+          <li><a href="/"  style="color:#222;text-decoration:none;">All</a></li>
+          <% categories.forEach(function(category) { %>
+            <li>
+              <a href="/<%= category.slug %>"filterCategory(category.id);return false;" style="color:#222;text-decoration:none;">
+                <%= category.name %>
+              </a>
+              <% if (category.subCategories && category.subCategories.length) { %>
+                <ul style="list-style:none;padding-left:16px;">
+                  <% category.subCategories.forEach(function(sub) { %>
+                    <li>
+                      <a href="/<%= category.slug %>/<%= sub.slug %>" onclick="filterSubCategory(sub.id );return false;" style="color:#666;text-decoration:none;">
+                        <%= sub.name %>
+                      </a>
+                    </li>
+                  <% }); %>
+                </ul>
+              <% } %>
+            </li>
+          <% }); %>
+        </ul>
+      </aside>
+      <!-- Main Content -->
+      <div style="flex:1;">
+        <div class="cart-link"><a href="/me">Profile / Cart</a></div>
+        <h1>Welcome to E-Commerce</h1>
+        <div class="products" id="products">
+          <% if (products && products.length) { %>
+            <% products.forEach(function(product) { %>
+              <%- include('partials/productCard', { product: product }) %>
+            <% }); %>
+          <% } else { %>
+            <div>No products found.</div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <script>
+      async function addToCart(productId) {
+        const res = await fetch("/api/v1/cart/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId, quantity: 1 }),
+        });
+        if (res.ok) {
+          alert("Added to cart!");
+        } else {
+          alert("Failed to add to cart.");
+        }
+      }
+    </script>
+    <%- include('partials/footer') %>
+  </body>
+</html>

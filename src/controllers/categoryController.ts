@@ -19,7 +19,7 @@ export const getCategories = async (req: Request, res: Response) => {
 export const getCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
   const category: Category | null = await prisma.category.findUnique({
-    where: { id: Number(id) },
+    where: { id: id},
     include: { subCategories: true },
   });
   if (!category) throw new AppError("Category not found.",404);
@@ -28,7 +28,7 @@ export const getCategory = async (req: Request, res: Response) => {
 };
 
 export const deleteCategory = async (req: Request, res: Response) => {
-    await prisma.category.delete({where:{id:Number(req.params.id)}});
+    await prisma.category.delete({where:{id:req.params.id}});
     res.status(204).send();
 }
 
@@ -36,7 +36,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 
     const {id} = req.params;
     const category: Category = await prisma.category.update({
-        where:{id:Number(id)},
+        where:{id:id},
         data:req.body
     });
     res.status(200).json({ message: "Updated successfully", data: category });
