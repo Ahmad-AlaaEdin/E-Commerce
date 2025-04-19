@@ -2,6 +2,7 @@ import express from "express";
 import {
   signup,
   login,
+  logout,
   protect,
   restrictTo,
   forgotPassword,
@@ -16,17 +17,14 @@ import {
   getMe,
   updateMe,
   deleteMe,
+  uploadUserPhoto,
 } from "../controllers/userController";
-
-//const multer = require('multer');
-
-//const upload = multer({ dest: 'public/img/users' });
 
 const userRoutes = express.Router();
 
-userRoutes.post("/signup", signup);
+userRoutes.post("/signup", uploadUserPhoto, signup);
 userRoutes.post("/login", login);
-//userRouter.get('/logout', logout);
+userRoutes.get("/logout", logout);
 userRoutes.post("/forgotPassword", forgotPassword);
 userRoutes.patch("/resetPassword/:token", resetPassword);
 
@@ -44,11 +42,7 @@ userRoutes.get(
   getMe,
   getUser
 );
-userRoutes.patch(
-  "/updateMe",
-
-  updateMe
-);
+userRoutes.patch("/updateMe", uploadUserPhoto, updateMe);
 userRoutes.delete("/deleteMe", deleteMe);
 
 userRoutes.use(restrictTo("admin"));

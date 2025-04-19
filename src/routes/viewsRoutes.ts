@@ -5,16 +5,24 @@ import {
   getOverview,
   getAccount,
   getCategoryProducts,
-  getSubCategoryProducts 
+  getSubCategoryProducts,
+  getProduct,
 } from "../controllers/viewsController";
-import { protect } from "../controllers/authController";
+import { protect, isLoggedIn } from "../controllers/authController";
+import { paymentSuccess } from "../controllers/paymentController";
+import { getCheckout } from "../controllers/viewsController";
+
 const viewsRouter = express.Router();
+// Payment routes
+viewsRouter.get("/checkout", protect, getCheckout);
+viewsRouter.get("/payment-success", protect, paymentSuccess);
 
 viewsRouter.get("/signup", getSignupForm);
 viewsRouter.get("/login", getLoginForm);
-viewsRouter.get("/", getOverview);
-viewsRouter.get("/:slug", getCategoryProducts);
-viewsRouter.get("/:category/:slug", getSubCategoryProducts); 
+viewsRouter.get("/", isLoggedIn, getOverview);
 viewsRouter.get("/me", protect, getAccount);
+viewsRouter.get("/product/:id", isLoggedIn, getProduct);
+viewsRouter.get("/:slug", isLoggedIn, getCategoryProducts);
+viewsRouter.get("/:category/:slug", isLoggedIn, getSubCategoryProducts);
 
 export default viewsRouter;

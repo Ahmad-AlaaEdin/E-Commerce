@@ -1,7 +1,34 @@
-<div class="product">
-  <img src="<%= product.image || 'https://via.placeholder.com/180' %>" alt="<%= product.name %>" />
+<a href="/product/<%= product.id %>" class="product">
+  <img src="<%= product.image || '/img/product-placeholder.jpg' %>" alt="<%= product.name %>" />
   <h3><%= product.name %></h3>
-  <p><%= product.description || '' %></p>
-  <div class="price">$<%= product.price %></div>
-  <button onclick="addToCart('<%= product.id %>')">Add to Cart</button>
-</div>
+  <p><%= product.description ? (product.description.length > 80 ? product.description.substring(0, 80) + '...' : product.description) : '' %></p>
+  <div class="price">$<%= product.price.toFixed(2) %></div>
+  <div class="product-actions">
+    <button onclick="event.preventDefault(); addToCart('<%= product.id %>')" class="btn btn-cart">Add to Cart</button>
+    <button onclick="event.preventDefault(); buyNow('<%= product.id %>')" class="btn btn-buy">Buy Now</button>
+  </div>
+</a>
+
+<script>
+  // Buy Now function will be implemented in the main script
+  async function buyNow(productId) {
+    try {
+      // First add to cart
+      const res = await fetch("/api/v1/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, quantity: 1 }),
+      });
+      
+      if (res.ok) {
+        // Redirect to checkout
+        window.location.href = '/checkout';
+      } else {
+        alert("Failed to process your request.");
+      }
+    } catch (err) {
+      console.error("Error processing request:", err);
+      alert("Failed to process your request.");
+    }
+  }
+</script>

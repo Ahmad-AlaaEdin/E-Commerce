@@ -32,14 +32,23 @@
   </div>
   <script>
     async function loadProfile() {
-      const res = await fetch('/api/v1/users/me');
-      const data = await res.json();
-      if (data && data.data && data.data.user) {
-        const user = data.data.user;
-        document.getElementById('profile').innerHTML = `
-          <div><b>Name:</b> ${user.name}</div>
-          <div><b>Email:</b> ${user.email}</div>
-        `;
+      try {
+        const res = await fetch('/api/v1/users/me');
+        const data = await res.json();
+        if (data && data.data && data.data.user) {
+          const user = data.data.user;
+          document.getElementById('profile').innerHTML = `
+            <div style="display:flex;align-items:center;margin-bottom:16px;">
+              <img src="${user.photo || '/img/default.jpg'}" alt="Profile" style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin-right:16px;">
+              <div>
+                <div><b>Name:</b> ${user.name}</div>
+                <div><b>Email:</b> ${user.email}</div>
+              </div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
       }
     }
     async function loadCart() {

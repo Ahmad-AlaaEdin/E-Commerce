@@ -96,12 +96,13 @@ model CartItem {
 
 
 model Order {
-  id        String    @id @default(uuid())
-  userId    String      
-  total     Float
-  status    OrderStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String      @id @default(uuid())
+  userId         String      
+  total          Float
+  status         OrderStatus @default(PENDING)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  paymentIntentId String?    @unique
 
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   orderItems  OrderItem[]
@@ -120,12 +121,12 @@ model OrderItem {
 }
 
 model Payment {
-  id           String   @id @default(uuid())
-  orderId      String   @unique
-  paymentMethod String
-  transactionId String @unique
-  status       PaymentStatus @default(PENDING)
-  createdAt    DateTime @default(now())
+  id             String        @id @default(uuid())
+  orderId        String        @unique
+  paymentMethod  String
+  transactionId  String?       @unique
+  status         PaymentStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
@@ -137,6 +138,7 @@ enum Role {
 
 enum OrderStatus {
   PENDING
+  PAID
   SHIPPED
   DELIVERED
   CANCELLED

@@ -94,7 +94,7 @@ export const protect = async (
     token = req.cookies.jwt;
   }
   if (!token) {
-    next(new AppError("You are not logged in", 401));
+    return next(new AppError("You are not logged in", 401));
   }
 
   //Verification Token

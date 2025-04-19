@@ -7,7 +7,13 @@ export const getMyCart = async (req: Request, res: Response, next: NextFunction)
   if (!req.user) return next(new AppError("You are not logged in", 401));
   const cart = await prisma.cart.findUnique({
     where: { userId: req.user.id },
-    include: { items: true },
+    include: { 
+      items: { 
+        include: { 
+          product: true 
+        } 
+      } 
+    },
   });
   res.status(200).json({ status: "success", data: { cart } });
 };
@@ -60,4 +66,31 @@ export const clearCart = async (req: Request, res: Response, next: NextFunction)
     await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
   }
   res.status(204).json({ status: "success", data: null });
+};
+
+// Update cart item quantity
+export const updateCartItem = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) return next(new AppError("You are not logged in", 401));
+  
+  const { itemId } = req.params;
+  const { quantity } = req.body;
+  
+  if (!quantity || quantity < 1) {
+    return next(new AppError("Quantity must be at least 1", 400));
+  }
+  
+  try {
+    const cartItem = await prisma.cartItem.update({
+      where: { id: itemId },
+      data: { quantity },
+      include: { product: true }
+    });
+    
+    res.status(200).json({
+      status: "success",
+      data: { cartItem }
+    });
+  } catch (error) {
+    return next(new AppError("Cart item not found", 404));
+  }
 };

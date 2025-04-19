@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cartRoutes from "./routes/cartRoutes";
 import orderRoutes from "./routes/orderRoutes";
-import paymentRoutes from "./routes/paymentRoutes";
+import paymentRouter from './routes/paymentRoutes';
 import addressRoutes from "./routes/addressRoutes";
 import viewsRouter from "./routes/viewsRoutes";
 import path from "path";
@@ -30,9 +30,12 @@ app.use("/api/v1/subcategory", subCategoryRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/orders", orderRoutes);
-app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/address", addressRoutes);
 
+app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json' }));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     status: "fail",
