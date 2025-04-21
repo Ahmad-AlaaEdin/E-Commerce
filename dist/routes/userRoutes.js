@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const authController_1 = require("../controllers/authController");
+const userController_1 = require("../controllers/userController");
+const userRoutes = express_1.default.Router();
+userRoutes.post("/signup", userController_1.uploadUserPhoto, authController_1.signup);
+userRoutes.post("/login", authController_1.login);
+userRoutes.get("/logout", authController_1.logout);
+userRoutes.post("/forgotPassword", authController_1.forgotPassword);
+userRoutes.patch("/resetPassword/:token", authController_1.resetPassword);
+userRoutes.use(authController_1.protect);
+userRoutes.patch("/updatePassword", authController_1.updatePassword);
+userRoutes.get("/me", userController_1.getMe, userController_1.getUser);
+userRoutes.patch("/updateMe", userController_1.uploadUserPhoto, userController_1.updateMe);
+userRoutes.delete("/deleteMe", userController_1.deleteMe);
+userRoutes.use((0, authController_1.restrictTo)("admin"));
+userRoutes.route("/").get(userController_1.getAllUsers);
+userRoutes.route("/:id").get(userController_1.getUser).patch(userController_1.updateUser).delete(userController_1.deleteUser);
+exports.default = userRoutes;

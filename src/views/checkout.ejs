@@ -113,13 +113,13 @@
  
   
 
-  <script type="module">
-    import { processCheckout } from '/js/payments.js';
-    
+  <!-- Add Axios CDN for browser usage -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="/js/payments.js"></script>
+  <script>
     document.getElementById('checkout-button').addEventListener('click', async function() {
       this.disabled = true;
       this.textContent = 'Processing...';
-      
       try {
         await processCheckout('<%= cart.id %>');
       } catch (err) {
