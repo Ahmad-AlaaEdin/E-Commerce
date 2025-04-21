@@ -29,7 +29,8 @@
     "nodemailer": "^6.10.1",
     "slugify": "^1.6.6",
     "streamifier": "^0.1.1",
-    "stripe": "^18.0.0"
+    "stripe": "^18.0.0",
+    "prisma": "^6.4.1"
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.4.2",
@@ -44,7 +45,6 @@
     "@types/node": "^22.13.5",
     "@types/nodemailer": "^6.4.17",
     "@types/streamifier": "^0.1.2",
-    "prisma": "^6.4.1",
     "prisma-erd-generator": "^2.0.4",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3"
