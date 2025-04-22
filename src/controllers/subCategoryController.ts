@@ -13,7 +13,6 @@ export const createSubCategory = async (req: Request, res: Response) => {
   res.status(201).json(category);
 };
 
-
 export const getSubCategories = async (req: Request, res: Response) => {
   const categories: SubCategory[] = await prisma.subCategory.findMany({
     where: { categoryId: req.params.categoryId },
@@ -37,7 +36,8 @@ export const deleteSubCategory = async (req: Request, res: Response) => {
 
 export const updateSubCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  if(req.body.name) req.body.slug = slugify(req.body.name, { lower: true, strict: true });
+  if (req.body.name)
+    req.body.slug = slugify(req.body.name, { lower: true, strict: true });
   const category: SubCategory = await prisma.subCategory.update({
     where: { id: id },
     data: req.body,

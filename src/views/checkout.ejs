@@ -4,118 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout | ByteBazaar</title>
-  <link rel="stylesheet" href="/css/style.css">
- 
-  <style>
-    .checkout-container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    
-    .checkout-summary {
-      background: #fafbfc;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .checkout-items {
-      margin-bottom: 20px;
-    }
-    
-    .checkout-item {
-      display: flex;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .checkout-item img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      margin-right: 15px;
-      border-radius: 4px;
-    }
-    
-    .checkout-item-details {
-      flex: 1;
-    }
-    
-    .checkout-total {
-      font-size: 18px;
-      font-weight: bold;
-      text-align: right;
-      padding: 10px 0;
-    }
-    
-    .checkout-btn {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      width: 100%;
-    }
-    
-    .checkout-btn:hover {
-      background: #45a049;
-    }
-    
-    @media (max-width: 768px) {
-      .checkout-item {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      
-      .checkout-item img {
-        margin-bottom: 10px;
-      }
-    }
-  </style>
+  <!-- Bootstrap CSS is assumed to be included in partials/header -->
 </head>
 <body>
   <%- include('partials/header', { title: 'Checkout' }) %>
-  
-  <div class="container">
-    <div class="checkout-container">
-      <h1>Checkout</h1>
-      
-      <div class="checkout-summary">
-        <h2>Order Summary</h2>
-        <div class="checkout-items" id="checkout-items">
-          <% cart.items.forEach(function(item) { %>
-            <div class="checkout-item">
-              <img src="<%= item.product.image || '/img/product-placeholder.jpg' %>" alt="<%= item.product.name %>">
-              <div class="checkout-item-details">
-                <h3><%= item.product.name %></h3>
-                <p>Quantity: <%= item.quantity %></p>
-                <p>Price: $<%= item.product.price.toFixed(2) %></p>
-              </div>
-              <div>
-                $<%= (item.quantity * item.product.price).toFixed(2) %>
-              </div>
-            </div>
-          <% }); %>
+
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h1 class="mb-4">Checkout</h1>
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2 class="h5 mb-0">Order Summary</h2>
+          </div>
+          <ul class="list-group list-group-flush">
+            <% cart.items.forEach(function(item) { %>
+              <li class="list-group-item d-flex align-items-center">
+                <img src="<%= item.product.image || '/img/product-placeholder.jpg' %>" alt="<%= item.product.name %>" class="rounded me-3" style="width:60px;height:60px;object-fit:cover;">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1"><%= item.product.name %></h6>
+                  <small>Quantity: <%= item.quantity %></small>
+                </div>
+                <span class="fw-bold">$<%= (item.quantity * item.product.price).toFixed(2) %></span>
+              </li>
+            <% }); %>
+          </ul>
+          <div class="card-footer text-end">
+            <span class="h5">Total: $<%= total.toFixed(2) %></span>
+          </div>
         </div>
-        
-        <div class="checkout-total">
-          Total: $<%= total.toFixed(2) %>
-        </div>
+        <button id="checkout-button" class="btn btn-success btn-lg w-100">Proceed to Payment</button>
       </div>
-      
-      <button id="checkout-button" class="checkout-btn">Proceed to Payment</button>
     </div>
   </div>
-  
- 
-  
 
-  <!-- Add Axios CDN for browser usage -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="/js/payments.js"></script>
   <script>
     document.getElementById('checkout-button').addEventListener('click', async function() {
       this.disabled = true;
@@ -130,7 +53,7 @@
       }
     });
   </script>
-  
+
   <%- include('partials/footer') %>
 </body>
 </html>

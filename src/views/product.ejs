@@ -4,104 +4,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= product.name %> | ByteBazaar</title>
-  <style>
-    body {
-      background: #f6f7fb;
-      font-family: "Segoe UI", Arial, sans-serif;
-      color: #222;
-    }
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-      padding: 32px 24px;
-    }
-    .product-container {
-      display: flex;
-      gap: 32px;
-    }
-    .product-image {
-      flex: 0 0 400px;
-    }
-    .product-image img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-    .product-details {
-      flex: 1;
-    }
-    .product-title {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-    .product-price {
-      font-size: 24px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 24px;
-    }
-    .product-description {
-      line-height: 1.6;
-      margin-bottom: 32px;
-    }
-    .add-to-cart {
-      background: #222;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 12px 24px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .add-to-cart:hover {
-      background: #444;
-    }
-    .back-link {
-      display: block;
-      margin-bottom: 24px;
-      color: #222;
-      text-decoration: underline;
-    }
-    .category-tag {
-      display: inline-block;
-      background: #f0f0f0;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-  </style>
+  <!-- Bootstrap CSS is assumed to be included in partials/header -->
 </head>
 <body>
   <%- include('partials/header', { title: product.name }) %>
-  
-  <div class="container">
-    <a href="javascript:history.back()" class="back-link">← Back to products</a>
-    
-    <div class="product-container">
-      <div class="product-image">
-        <img src="<%= product.image || '/img/product-placeholder.jpg' %>" alt="<%= product.name %>" />
-      </div>
-      
-      <div class="product-details">
+
+  <div class="container my-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
         <% if (product.category) { %>
-          <div class="category-tag"><%= product.category.name %></div>
+          <li class="breadcrumb-item"><a href="/<%= product.category.slug %>"><%= product.category.name %></a></li>
         <% } %>
-        
-        <h1 class="product-title"><%= product.name %></h1>
-        <div class="product-price">$<%= product.price.toFixed(2) %></div>
-        
-        <div class="product-description">
-          <%= product.description || 'No description available.' %>
+        <% if (product.subCategory) { %>
+          <li class="breadcrumb-item"><a href="/<%= product.category.slug %>/<%= product.subCategory.slug %>"><%= product.subCategory.name %></a></li>
+        <% } %>
+        <li class="breadcrumb-item active" aria-current="page"><%= product.name %></li>
+      </ol>
+    </nav>
+
+    <div class="row g-5">
+      <div class="col-md-6">
+        <div class="position-sticky" style="top: 2rem;">
+          <img src="<%= product.image || '/img/product-placeholder.jpg' %>" alt="<%= product.name %>" class="img-fluid rounded shadow-sm" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <% if (product.category) { %>
+          <span class="badge bg-secondary mb-2"><%= product.category.name %></span>
+        <% } %>
+        <h1 class="display-5 fw-bold mb-3"><%= product.name %></h1>
+        <div class="d-flex align-items-center mb-4">
+          <div class="h3 text-success mb-0">$<%= product.price.toFixed(2) %></div>
+          <% if (product.stock > 0) { %>
+            <span class="badge bg-success ms-3">In Stock</span>
+          <% } else { %>
+            <span class="badge bg-danger ms-3">Out of Stock</span>
+          <% } %>
         </div>
         
-        <button class="add-to-cart" onclick="addToCart('<%= product.id %>')">Add to Cart</button>
+        <div class="mb-4">
+          <h5 class="mb-3">Description</h5>
+          <p class="lead"><%= product.description || 'No description available.' %></p>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex">
+          <button class="btn btn-primary btn-lg flex-grow-1" onclick="addToCart('<%= product.id %>')">
+            <i class="fas fa-cart-plus me-2"></i> Add to Cart
+          </button>
+          <a href="/checkout" class="btn btn-success btn-lg">Buy Now</a>
+        </div>
       </div>
     </div>
   </div>
@@ -121,6 +73,7 @@
         });
         
         if (res.ok) {
+          updateCartCount();
           alert('Product added to cart!');
         } else {
           const data = await res.json();
@@ -132,7 +85,7 @@
       }
     }
   </script>
-  
+
   <%- include('partials/footer') %>
 </body>
 </html>

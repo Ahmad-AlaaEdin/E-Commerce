@@ -82,7 +82,8 @@ const sendErrorProd = (err: any, req: Request, res: Response) => {
   if (err.isOperational) {
     return res.status(err.statusCode).render('error', {
       title: 'Something went wrong!',
-      msg: err.message
+      msg: err.message, // <-- ensure 'msg' is passed
+      user: req.user
     });
   }
   // B) Programming or other unknown error: don't leak error details
@@ -90,8 +91,9 @@ const sendErrorProd = (err: any, req: Request, res: Response) => {
   console.error('ERROR 💥', err);
   // 2) Send generic message
   return res.status(err.statusCode).render('error', {
-    title: 'Something went wrong!',
-    msg: 'Please try again later.'
+    title: 'Error',
+    msg: 'Something went wrong!', // <-- ensure 'msg' is passed
+    user: req.user
   });
 };
 

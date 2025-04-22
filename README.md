@@ -49,6 +49,8 @@ A modern E-Commerce web application built with Node.js, Express, TypeScript, Pri
    ```bash
    git clone https://github.com/yourusername/e-commerce.git
    cd e-commerce
+   ```
+
 ## 🔧 Installation Steps
 
 ### 1. Install dependencies:
@@ -78,6 +80,7 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 
 ```
+
 ### 3. Run migrations:
 
 ```bash
@@ -89,6 +92,9 @@ npx prisma migrate dev
 ```bash
 npm start
 ```
+
 ## 📊 Entity Relationship Diagram (ERD)
+
 #### Below is a simplified view of the database structure:
-![ERD](prisma/ERD.svg)
+
+![ERD](prisma/ERD.jpg)
