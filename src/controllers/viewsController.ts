@@ -1,4 +1,4 @@
-import { Request, Response,NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import prisma from "../config/prisma";
 import { Product } from "@prisma/client";
 import AppError from "../utils/appError";
@@ -14,7 +14,20 @@ export const getSignupForm = (req: Request, res: Response) => {
 };
 
 export const getOverview = async (req: Request, res: Response) => {
-  const products = await prisma.product.findMany();
+  const query = req.query.query as string | undefined;
+
+  const products: Product[] = await prisma.product.findMany({
+    where: {
+      name: query
+        ? {
+            contains: query,
+            mode: "insensitive" as const,
+          }
+        : undefined,
+    },
+  });
+  console.log(products);
+  console.log(query);
   const categories = await prisma.category.findMany({
     include: { subCategories: true },
   });
@@ -89,24 +102,28 @@ export const getSubCategoryProducts = async (req: Request, res: Response) => {
   });
 };
 
-export const getProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const getProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
         category: true,
-        subCategory: true
-      }
+        subCategory: true,
+      },
     });
-    
+
     if (!product) {
       return res.status(404).render("404", {
         title: "Product Not Found",
-        message: "The product you are looking for does not exist."
+        message: "The product you are looking for does not exist.",
       });
     }
-    
+
     res.status(200).render("product", {
       title: product.name,
       product,
@@ -116,34 +133,38 @@ export const getProduct = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getCheckout = async (req: Request, res: Response, next: NextFunction) => {
+export const getCheckout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   if (!req.user) return next(new AppError("You are not logged in", 401));
-  
+
   // Get the user's cart
   const cart = await prisma.cart.findUnique({
     where: { userId: req.user.id },
-    include: { 
-      items: { 
-        include: { 
-          product: true 
-        } 
-      } 
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
     },
   });
-  
+
   if (!cart || !cart.items.length) {
-    return res.redirect('/');
+    return res.redirect("/");
   }
-  
+
   // Calculate total
   const total = cart.items.reduce(
     (sum, item) => sum + item.quantity * item.product.price,
     0
   );
-  
+
   res.status(200).render("checkout", {
     title: "Checkout",
     cart,
-    total
+    total,
   });
 };

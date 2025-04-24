@@ -1,32 +1,62 @@
-<header>
-  <h1>Techno</h1>
-
-  <button class="menu-toggle" id="menuToggle">
-    <i class="fa-solid fa-bars"></i>
-  </button>
-
-  <form>
-    <input type="text" placeholder="Search" />
-    <button>
-      <i class="fa-solid fa-magnifying-glass"></i>
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-dark" href="/">Techno</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
     </button>
-  </form>
 
-  <div class="nav-actions" id="navActions">
-    <% if (user) { %>
-      <div class="profile">
-        <a href="/profile">
-          <img src="<%= user.photo || '/img/deafult.jpg' %>" alt="<%= user.name %>" />
-        </a>
-        <span><%= user.name %></span>
-      </div>
-      <button class="cart">
-        <i class="fa-solid fa-cart-shopping"></i>
-      </button>
-      <a href="/logout">Logout</a>
-    <% } else { %>
-      <a href="/login">Login</a>
-      <a href="/signup">Signup</a>
-    <% } %>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <!-- Search Form -->
+
+      <form class="d-flex me-auto" role="search" action="/" method="GET">
+        <input
+          class="form-control me-2 border rounded-pill"
+          type="search"
+          name="query"
+          placeholder="Search products..."
+          aria-label="Search products"
+        />
+        <button class="btn btn-outline-dark rounded-pill" type="submit">
+          Search
+        </button>
+      </form>
+      <!-- Nav Items -->
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+        <% if(user){ %>
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle text-dark"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <%= user.name %>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+            <li><a class="dropdown-item" href="/orders">Orders</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item" href="#">Logout</a></li>
+          </ul>
+        </li>
+        <% }else{ %>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="#">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="#">Signup</a>
+        </li>
+        <% } %>
+      </ul>
+    </div>
   </div>
-</header>
+</nav>

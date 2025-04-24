@@ -38,7 +38,19 @@ export const createProduct = async (req: Request, res: Response) => {
 };
 
 export const getAllProducts = async (req: Request, res: Response) => {
-  const products: Product[] = await prisma.product.findMany();
+  const query = req.query.search as string | undefined;
+
+  const products: Product[] = await prisma.product.findMany({
+    where: {
+      name: query
+        ? {
+            contains: query,
+            mode: "insensitive" as const,
+          }
+        : undefined,
+    },
+  });
+
   res.status(200).json(products);
 };
 
@@ -62,7 +74,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     const imageUrl = await uploadFromBuffer(fileBuffer, "products");
     req.body.image = imageUrl;
   }
-  if(req.body.price)req.body.price = Number(req.body.price);
+  if (req.body.price) req.body.price = Number(req.body.price);
   const product: Product = await prisma.product.update({
     where: { id: req.params.id },
     data: req.body,

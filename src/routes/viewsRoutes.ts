@@ -20,7 +20,7 @@ viewsRouter.get("/payment-success", protect, paymentSuccess);
 viewsRouter.get("/signup", getSignupForm);
 viewsRouter.get("/login", getLoginForm);
 viewsRouter.get("/", isLoggedIn, getOverview);
-viewsRouter.get("/me", protect, getAccount);
+viewsRouter.get("/profile", protect, getAccount);
 viewsRouter.get("/product/:id", isLoggedIn, getProduct);
 viewsRouter.get("/:slug", isLoggedIn, getCategoryProducts);
 viewsRouter.get("/:category/:slug", isLoggedIn, getSubCategoryProducts);
