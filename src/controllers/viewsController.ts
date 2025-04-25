@@ -26,8 +26,7 @@ export const getOverview = async (req: Request, res: Response) => {
         : undefined,
     },
   });
-  console.log(products);
-  console.log(query);
+  
   const categories = await prisma.category.findMany({
     include: { subCategories: true },
   });
@@ -46,11 +45,11 @@ export const getAccount = (req: Request, res: Response) => {
 };
 export const getCategoryProducts = async (req: Request, res: Response) => {
   const { slug } = req.params;
-  console.log(slug);
+ 
   const category = await prisma.category.findUnique({
     where: { slug },
   });
-  console.log(category);
+ 
 
   let products: Product[] = [];
   if (category) {

@@ -62,7 +62,7 @@ export const updateMe = async (
       )
     );
 
-  const filteredBody = filterObj(req.body, "name", "email", "photo");
+  const filteredBody = filterObj(req.body, "name", "phone", "photo");
   // if (req.file) filteredBody.photo = req.file.filename;
   if (!req.user) return next(new AppError("You are not logged in", 401));
   // Update user in DB using Prisma
