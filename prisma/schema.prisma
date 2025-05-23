@@ -10,12 +10,13 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String
+  password  String?
   name      String
   role      Role     @default(USER)
   active    Boolean  @default(true)
   photo     String?
   phone     String?
+  provider  String @default("System")
   createdAt DateTime @default(now())
   passwordChangedAt DateTime? 
   passwordResetToken String?

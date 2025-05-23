@@ -12,11 +12,22 @@ import paymentRouter from './routes/paymentRoutes';
 import addressRoutes from "./routes/addressRoutes";
 import viewsRouter from "./routes/viewsRoutes";
 import path from "path";
+import passport from "passport";
+
+
 const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
+
+
+
+app.use(passport.initialize());
+
+
+
+// Serialize/deserialize user
 
 app.set("view engine", "ejs");
 app.set('views', path.join(__dirname, 'views'));
@@ -24,10 +35,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use("/", viewsRouter);
+app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/subcategory", subCategoryRoutes);
-app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/payments", paymentRouter);

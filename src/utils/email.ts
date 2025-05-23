@@ -34,7 +34,7 @@ class Email {
 
     // 2) Define email options
     const mailOptions = {
-      from: "ahmadalaaeldin@gmail.com",
+      from: process.env.EMAIL_FROM,
       to: this.to,
       subject,
       html,

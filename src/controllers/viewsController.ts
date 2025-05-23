@@ -165,5 +165,6 @@ export const getCheckout = async (
     title: "Checkout",
     cart,
     total,
+    user: req.user,
   });
 };

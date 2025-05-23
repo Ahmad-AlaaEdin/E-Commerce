@@ -23,8 +23,8 @@ router.use(protect);
 // Get checkout session
 router.get("/checkout-session/:cartId", getCheckoutSession);
 
-// Payment success page
-router.get("/success", paymentSuccess);
+// Payment success page - Change this to match the success_url in your controller
+router.get("/payment-success/", paymentSuccess);
 
 // Pay for an existing order
 router.post("/", payOrder);

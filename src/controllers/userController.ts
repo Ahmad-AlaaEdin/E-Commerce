@@ -1,7 +1,6 @@
 import AppError from "../utils/appError";
 import { Request, Response, NextFunction } from "express";
 import prisma from "../config/prisma";
-import "../types/express";
 import multer from "multer";
 import { FileFilterCallback } from "multer";
 import uploadFromBuffer from "../config/cloudinary";

@@ -19,9 +19,10 @@ import {
   deleteMe,
   uploadUserPhoto,
 } from "../controllers/userController";
+import passport from "passport";
 
 const userRoutes = express.Router();
-
+userRoutes.get('/auth/google',passport.authenticate('google'))
 userRoutes.post("/signup", uploadUserPhoto, signup);
 userRoutes.post("/login", login);
 userRoutes.get("/logout", logout);

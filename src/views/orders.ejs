@@ -2,49 +2,185 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>My Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders | Techno</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
   <style>
-    body { background: #f6f7fb; font-family: 'Segoe UI', Arial, sans-serif; color: #222; }
-    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.04); padding: 32px 24px; }
-    h2 { font-weight: 700; margin-bottom: 24px; }
-    .order { border-bottom: 1px solid #eee; padding: 16px 0; }
-    .order:last-child { border-bottom: none; }
-    .order-items { margin: 8px 0 0 0; }
-    .order-item { color: #444; font-size: 15px; }
-    .back-link { margin-bottom: 24px; }
-    .back-link a { color: #222; text-decoration: underline; }
+    .order-card {
+      margin-bottom: 20px;
+      transition: transform 0.2s;
+    }
+    .order-card:hover {
+      transform: translateY(-5px);
+    }
+    .order-status {
+      font-size: 0.9rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 20px;
+    }
+    .status-PENDING { background-color: #fff3cd; color: #856404; }
+    .status-PAID { background-color: #d4edda; color: #155724; }
+    .status-SHIPPED { background-color: #cce5ff; color: #004085; }
+    .status-DELIVERED { background-color: #d1e7dd; color: #0f5132; }
+    .status-CANCELLED { background-color: #f8d7da; color: #721c24; }
+    .order-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .order-item:last-child {
+      border-bottom: none;
+    }
+    .empty-orders {
+      text-align: center;
+      padding: 50px 0;
+    }
+    .empty-orders i {
+      font-size: 4rem;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="back-link"><a href="/me">Back to Profile</a></div>
-    <h2>My Orders</h2>
-    <div id="orders"></div>
+  <%- include('partials/header', { title: 'My Orders' }) %>
+  
+  <div class="container py-5">
+    <h1 class="mb-4">My Orders</h1>
+    
+    <div id="orders-container" class="row">
+      <!-- Orders will be loaded here -->
+      <div class="col-12 text-center py-5">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
   </div>
+  
   <script>
-    async function loadOrders() {
-      const res = await fetch('/api/v1/orders');
-      const data = await res.json();
-      const orders = data.data.orders;
-      const container = document.getElementById('orders');
-      if (!orders || orders.length === 0) {
-        container.innerHTML = '<div style="color:#888;">No orders found.</div>';
-        return;
-      }
-      container.innerHTML = '';
-      orders.forEach(order => {
-        container.innerHTML += `
-          <div class="order">
-            <div><b>Order #${order.id}</b> | Total: $${order.total} | Status: ${order.status}</div>
-            <div class="order-items">
-              ${order.orderItems.map(item => `<div class="order-item">Product: ${item.productId} x${item.quantity} ($${item.price})</div>`).join('')}
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const response = await fetch('/api/v1/orders');
+        const data = await response.json();
+        const orders = data.data.orders;
+        const container = document.getElementById('orders-container');
+        
+        // Clear loading spinner
+        container.innerHTML = '';
+        
+        if (!orders || orders.length === 0) {
+          container.innerHTML = `
+            <div class="col-12 empty-orders">
+              <i class="bi bi-bag-x"></i>
+              <h3>No orders found</h3>
+              <p class="text-muted">You haven't placed any orders yet.</p>
+              <a href="/" class="btn btn-primary mt-3">Start Shopping</a>
             </div>
-            <div style="color:#aaa;font-size:13px;">${new Date(order.createdAt).toLocaleString()}</div>
+          `;
+          return;
+        }
+        
+        // Sort orders by date (newest first)
+        orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        orders.forEach(order => {
+          // Calculate total items
+          const totalItems = order.orderItems.reduce((sum, item) => sum + item.quantity, 0);
+          
+          // Format date
+          const orderDate = new Date(order.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+          
+          const orderCard = document.createElement('div');
+          orderCard.className = 'col-md-6 col-lg-4';
+          orderCard.innerHTML = `
+            <div class="card order-card shadow-sm">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="text-muted">${orderDate}</span>
+                <span class="order-status status-${order.status}">${order.status}</span>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">Order #${order.id.substring(0, 8)}</h5>
+                <p class="card-text">
+                  <strong>Total:</strong> $${order.total.toFixed(2)}<br>
+                  <strong>Items:</strong> ${totalItems}
+                </p>
+                
+                <div class="order-items mt-3">
+                  <h6>Order Items</h6>
+                  ${order.orderItems.map(item => `
+                    <div class="order-item">
+                      <div class="d-flex justify-content-between">
+                        <div>
+                          <div>${item.productId.substring(0, 8)}</div>
+                          <small class="text-muted">Qty: ${item.quantity}</small>
+                        </div>
+                        <div>$${item.price.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="card-footer">
+                ${order.status === 'PENDING' ? 
+                  `<button class="btn btn-sm btn-success pay-order-btn" data-order-id="${order.id}">Pay Now</button>` : 
+                  ''}
+                <button class="btn btn-sm btn-outline-secondary float-end" onclick="window.location.href='/product/${order.orderItems[0]?.productId}'">Buy Again</button>
+              </div>
+            </div>
+          `;
+          
+          container.appendChild(orderCard);
+        });
+        
+        // Add event listeners to pay buttons
+        document.querySelectorAll('.pay-order-btn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const orderId = this.getAttribute('data-order-id');
+            try {
+              const response = await fetch('/api/v1/payments/pay-order', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ orderId })
+              });
+              
+              const data = await response.json();
+              
+              if (data.status === 'success') {
+                // Redirect to Stripe checkout
+                window.location.href = data.session.url;
+              } else {
+                alert('Error processing payment. Please try again.');
+              }
+            } catch (err) {
+              console.error('Error:', err);
+              alert('Error processing payment. Please try again.');
+            }
+          });
+        });
+        
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        const container = document.getElementById('orders-container');
+        container.innerHTML = `
+          <div class="col-12 text-center py-5">
+            <div class="alert alert-danger">
+              Error loading orders. Please try again later.
+            </div>
           </div>
         `;
-      });
-    }
-    loadOrders();
+      }
+    });
   </script>
+  
+  <%- include('partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

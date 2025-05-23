@@ -157,7 +157,6 @@ export const paymentSuccess = async (
       return next(new AppError("Invalid session ID", 400));
     }
 
-    // Find the order
     const order = await prisma.order.findFirst({
       where: { paymentIntentId: session.payment_intent as string },
       include: { orderItems: true },
@@ -233,13 +232,15 @@ export const payOrder = async (
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      success_url: `${req.protocol}://${req.get(
-        "host"
-      )}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.protocol}://${req.get("host")}/orders`,
       cancel_url: `${req.protocol}://${req.get("host")}/orders`,
       customer_email: req.user.email,
       client_reference_id: order.id,
       line_items: lineItems,
+      metadata: {
+        orderId: order.id,
+        userId: req.user.id,
+      },
     });
 
     // Update order with payment intent ID

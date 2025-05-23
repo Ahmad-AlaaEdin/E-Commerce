@@ -1,59 +1,82 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkout | ByteBazaar</title>
-  <!-- Bootstrap CSS is assumed to be included in partials/header -->
-</head>
-<body>
-  <%- include('partials/header', { title: 'Checkout' }) %>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Techno</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
+      crossorigin="anonymous"
+    />
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+  <body>
+    <%- include('partials/header') %>
 
-  <div class="container my-5">
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <h1 class="mb-4">Checkout</h1>
-        <div class="card mb-4">
-          <div class="card-header">
-            <h2 class="h5 mb-0">Order Summary</h2>
-          </div>
-          <ul class="list-group list-group-flush">
-            <% cart.items.forEach(function(item) { %>
+    <div class="container my-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <h1 class="mb-4">Checkout</h1>
+          <div class="card mb-4">
+            <div class="card-header">
+              <h2 class="h5 mb-0">Order Summary</h2>
+            </div>
+            <ul class="list-group list-group-flush">
+              <% cart.items.forEach(function(item) { %>
               <li class="list-group-item d-flex align-items-center">
-                <img src="<%= item.product.image || '/img/product-placeholder.jpg' %>" alt="<%= item.product.name %>" class="rounded me-3" style="width:60px;height:60px;object-fit:cover;">
+                <img
+                  src="<%= item.product.image || '/img/product-placeholder.jpg' %>"
+                  alt="<%= item.product.name %>"
+                  class="rounded me-3"
+                  style="width: 60px; height: 60px; object-fit: cover"
+                />
                 <div class="flex-grow-1">
                   <h6 class="mb-1"><%= item.product.name %></h6>
                   <small>Quantity: <%= item.quantity %></small>
                 </div>
-                <span class="fw-bold">$<%= (item.quantity * item.product.price).toFixed(2) %></span>
+                <span class="fw-bold"
+                  >$<%= (item.quantity * item.product.price).toFixed(2) %></span
+                >
               </li>
-            <% }); %>
-          </ul>
-          <div class="card-footer text-end">
-            <span class="h5">Total: $<%= total.toFixed(2) %></span>
+              <% }); %>
+            </ul>
+            <div class="card-footer text-end">
+              <span class="h5">Total: $<%= total.toFixed(2) %></span>
+            </div>
           </div>
+          <button id="checkout-button" class="btn btn-success btn-lg w-100">
+            Proceed to Payment
+          </button>
         </div>
-        <button id="checkout-button" class="btn btn-success btn-lg w-100">Proceed to Payment</button>
       </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script>
-    document.getElementById('checkout-button').addEventListener('click', async function() {
-      this.disabled = true;
-      this.textContent = 'Processing...';
-      try {
-        await processCheckout('<%= cart.id %>');
-      } catch (err) {
-        console.error(err);
-        this.disabled = false;
-        this.textContent = 'Proceed to Payment';
-        alert('Payment processing failed. Please try again.');
-      }
-    });
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      document
+        .getElementById("checkout-button")
+        .addEventListener("click", async function () {
+          this.disabled = true;
+          this.textContent = "Processing...";
+          try {
+            await processCheckout("<%= cart.id %>");
+          } catch (err) {
+            console.error(err);
+            this.disabled = false;
+            this.textContent = "Proceed to Payment";
+            alert("Payment processing failed. Please try again.");
+          }
+        });
+    </script>
 
-  <%- include('partials/footer') %>
-</body>
+    <%- include('partials/footer') %>
+    <script src="/js/payments.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>

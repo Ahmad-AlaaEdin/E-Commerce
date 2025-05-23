@@ -8,5 +8,7 @@ declare namespace NodeJS {
     BREVO_PORT: string;
     BREVO_LOGIN: string;
     BREVO_PASSWORD: string;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
   }
 }

@@ -7,7 +7,33 @@ import jwt from "jsonwebtoken";
 import { changedPasswordAfter, createPasswordResetToken } from "../utils/auth";
 import Email from "../utils/email";
 import crypto from "crypto";
-import "../types/express";
+import passport from "../config/passport";
+
+
+export const googleAuth = (req :Request, res:Response, next:NextFunction) => {
+  
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+};
+
+export const googleCallback = (req :Request, res:Response, next:NextFunction) => {
+  
+  passport.authenticate('google', {
+    failureRedirect: '/auth/failure',
+    successRedirect: '/',
+  })(req, res, next);
+};
+
+
+exports.logout = (req:Request, res:Response, next:NextFunction) => {
+  req.logout(err => {
+    if (err) return next(err);
+    res.redirect('/');
+  });
+};
+
+
+
+//import "../types/express";
 const signToken = (userID: string) => {
   console.log("signToken");
   return jwt.sign({ id: userID }, process.env.JWT_SECRET || "", {
@@ -71,6 +97,9 @@ export const login = async (req: Request, res: Response) => {
       email: email,
     },
   });
+  if(user?.provider !=="System" || !user?.password)
+    throw new AppError(`Please Login With ${user?.provider}`, 400);
+
   if (!user || !(await bcrypt.compare(password, user.password))) {
     throw new AppError("Incorrect  Email or Password", 401);
   }
@@ -82,6 +111,11 @@ export const protect = async (
   res: Response,
   next: NextFunction
 ) => {
+
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+
   // Check Token
   console.log("protect");
   let token;
@@ -162,17 +196,22 @@ export const isLoggedIn = async (
   next();
 };
 
+// Update the restrictTo function
 export const restrictTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return next(new AppError("You are not logged in", 401));
-    }
-    if (!roles.includes(req.user.role)) {
-      throw new AppError(
-        "You do not have a permission to perform this action",
-        403
+    // Check if user exists and has a role property
+    if (!req.user || !req.user.role) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
       );
     }
+
+    if (!roles.includes(req.user.role as string)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+
     next();
   };
 };
@@ -284,41 +323,46 @@ export const logout = (req: Request, res: Response) => {
   res.status(200).json({ status: "success" });
 };
 
+// Update the updatePassword function
 export const updatePassword = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.user) {
-    return next(new AppError("You are not logged in", 401));
-  }
-  if (
-    !req.body.currentPassword ||
-    !req.body.password ||
-    !req.body.passwordConfirm
-  ) {
-    throw new AppError(
-      "Please provide current password, new password and confirm password",
-      400
-    );
-  }
+  try {
+    // 1) Get user from collection
+    if (!req.user || !req.user.id) {
+      return next(new AppError('You are not logged in', 401));
+    }
 
-  if (!(await bcrypt.compare(req.body.currentPassword, req.user.password))) {
-    throw new AppError("Incorrect  Email or Password", 401);
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id as string },
+    });
+
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+if(user.provider!=="System" ||!user.password)
+    return next(new AppError('Please Login With System Account', 401));
+    // 2) Check if POSTed current password is correct
+    if (!(await bcrypt.compare(req.body.currentPassword, user.password))) {
+      return next(new AppError('Your current password is wrong', 401));
+    }
+
+    // 3) If so, update password
+    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+
+    await prisma.user.update({
+      where: { id: req.user.id as string },
+      data: {
+        password: hashedPassword,
+        passwordChangedAt: new Date(),
+      },
+    });
+
+    // 4) Log user in, send JWT
+    sendToken(user, 200, res);
+  } catch (err) {
+    next(err);
   }
-
-  if (req.body.password !== req.body.passwordConfirm) {
-    throw new AppError("Passwords do not match", 400);
-  }
-
-  const updatedUser = await prisma.user.update({
-    where: { id: req.user.id },
-    data: {
-      password: req.body.password,
-      passwordResetToken: null,
-      passwordResetExpiresAt: null,
-    },
-  });
-
-  sendToken(updatedUser, 200, res);
 };
