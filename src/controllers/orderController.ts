@@ -49,6 +49,7 @@ export const getMyOrders = async (
   next: NextFunction
 ) => {
   if (!req.user) return next(new AppError("You are not logged in", 401));
+  console.log(req.user);
   const orders = await prisma.order.findMany({
     where: { userId: req.user.id },
     include: { orderItems: true },

@@ -1,10 +1,10 @@
 import express from "express";
-import { protect } from "../controllers/authController";
+import { isLoggedIn } from "../controllers/authController";
 import { placeOrder, getMyOrders } from "../controllers/orderController";
 
 const router = express.Router();
 
-router.use(protect);
+router.use(isLoggedIn);
 
 router.post("/", placeOrder);
 router.get("/", getMyOrders);

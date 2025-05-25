@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../controllers/authController";
+import { isLoggedIn } from "../controllers/authController";
 import {
   getMyCart,
   addToCart,
@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-router.use(protect);
+router.use(isLoggedIn);
 router.route("/").get(getMyCart).post(addToCart).delete(clearCart);
 router.route("/:itemId").delete(removeFromCart).patch(updateCartItem);
 

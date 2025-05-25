@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../controllers/authController";
+import { isLoggedIn } from "../controllers/authController";
 import {
   getCheckoutSession,
   paymentSuccess,
@@ -18,7 +18,7 @@ router.post(
 );
 
 // Protected routes
-router.use(protect);
+router.use(isLoggedIn);
 
 // Get checkout session
 router.get("/checkout-session/:cartId", getCheckoutSession);

@@ -1,74 +1,69 @@
 import prisma from "../config/prisma";
 import AppError from "../utils/appError";
-import { Request, Response, CookieOptions, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
-import jwt from "jsonwebtoken";
-import { changedPasswordAfter, createPasswordResetToken } from "../utils/auth";
+import {  createPasswordResetToken } from "../utils/auth";
 import Email from "../utils/email";
 import crypto from "crypto";
 import passport from "../config/passport";
 
-
-export const googleAuth = (req :Request, res:Response, next:NextFunction) => {
-  
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
-};
-
-export const googleCallback = (req :Request, res:Response, next:NextFunction) => {
-  
-  passport.authenticate('google', {
-    failureRedirect: '/auth/failure',
-    successRedirect: '/',
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  passport.authenticate("local", (err:Error, user:User, info:any) => {
+    console.log("Login attempt:", { err, user, info }); // Add this line
+    if (err) return next(err);
+    if (!user) {
+      return res.status(401).json({ status: "fail", message: info?.message || "Invalid credentials" });
+    }
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      return res.status(200).json({
+        status: "success",
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          }
+        }
+      });
+    });
   })(req, res, next);
 };
 
+export const googleAuth = (req: Request, res: Response, next: NextFunction) => {
+  passport.authenticate("google", { scope: ["profile", "email"] })(
+    req,
+    res,
+    next
+  );
+};
 
-exports.logout = (req:Request, res:Response, next:NextFunction) => {
-  req.logout(err => {
-    if (err) return next(err);
-    res.redirect('/');
+export const googleCallback = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  passport.authenticate("google", {
+    failureRedirect: "/error",
+    successRedirect: "/",
+  })(req, res, next);
+};
+
+export const logout = (req: Request, res: Response, next: NextFunction) => {
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logged out" });
+    });
   });
 };
 
-
-
-//import "../types/express";
-const signToken = (userID: string) => {
-  console.log("signToken");
-  return jwt.sign({ id: userID }, process.env.JWT_SECRET || "", {
-    expiresIn: "30d",
-  });
-};
-const sendToken = (user: User, statusCode: number, res: Response) => {
-  const token = signToken(user.id);
-  const cookieOptions: CookieOptions = {
-    expires: new Date(
-      Date.now() +
-        parseInt(process.env.JWT_COOKIE_EXPIRES_IN! || "30") *
-          24 *
-          60 *
-          60 *
-          1000
-    ),
-    httpOnly: true,
-  };
-  console.log("sendToken");
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
-
-  res.cookie("jwt", token, cookieOptions);
-
-  // Remove password from output
-  const { password: userPassword, ...safeUser } = user;
-
-  res.status(statusCode).json({
-    status: "success",
-    token,
-    data: {
-      safeUser,
-    },
-  });
-};
 export const signup = async (req: Request, res: Response) => {
   const { name, email, password, passwordConfirm } = req.body;
   const user = await prisma.user.findUnique({
@@ -83,79 +78,13 @@ export const signup = async (req: Request, res: Response) => {
     throw new AppError("Passwords do not match", 400);
   }
   const newUser = await prisma.user.create({ data: { email, password, name } });
-
-  sendToken(newUser, 201, res);
-};
-
-export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    throw new AppError("Please provide email and password", 400);
-  }
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
+  const { password: _, ...safeUser } = newUser;
+  res.status(201).json({
+    status: "success",
+    data: {
+      user: safeUser,
     },
   });
-  if(user?.provider !=="System" || !user?.password)
-    throw new AppError(`Please Login With ${user?.provider}`, 400);
-
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    throw new AppError("Incorrect  Email or Password", 401);
-  }
-  sendToken(user, 200, res);
-};
-
-export const protect = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-
-  if (req.isAuthenticated && req.isAuthenticated()) {
-    return next();
-  }
-
-  // Check Token
-  console.log("protect");
-  let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
-  if (!token) {
-    return next(new AppError("You are not logged in", 401));
-  }
-
-  //Verification Token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
-  //Check if user still exist
-  const user = await prisma.user.findUnique({
-    where: {
-      id: decoded.id,
-    },
-  });
-
-  if (!user)
-    throw new AppError(
-      "The User belonging to this token no longer exists.",
-      401
-    );
-
-  //Check if password changed after token was issued
-  if (changedPasswordAfter(user, decoded.iat as number)) {
-    throw new AppError(
-      "User Recently Changed password! please log in again.",
-      401
-    );
-  }
-  req.user = user;
-  console.log("protect22");
-  next();
 };
 
 export const isLoggedIn = async (
@@ -163,37 +92,11 @@ export const isLoggedIn = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (req.cookies.jwt) {
-    try {
-      // 1) verify token
-      const decoded = jwt.verify(
-        req.cookies.jwt,
-        process.env.JWT_SECRET || ""
-      ) as jwt.JwtPayload;
-
-      // 2) Check if user still exists
-      const currentUser = await prisma.user.findUnique({
-        where: {
-          id: decoded.id,
-        },
-      });
-      if (!currentUser) {
-        return next();
-      }
-
-      // 3) Check if user changed password after the token was issued
-      if (changedPasswordAfter(currentUser, decoded.iat as number)) {
-        return next();
-      }
-
-      // THERE IS A LOGGED IN USER
-      res.locals.user = currentUser;
-      return next();
-    } catch (err) {
-      return next();
-    }
+  if (req.isAuthenticated()) {
+    return next();
+  }else{
+    return next(new AppError("You are not logged in", 401));
   }
-  next();
 };
 
 // Update the restrictTo function
@@ -202,13 +105,13 @@ export const restrictTo = (...roles: string[]) => {
     // Check if user exists and has a role property
     if (!req.user || !req.user.role) {
       return next(
-        new AppError('You do not have permission to perform this action', 403)
+        new AppError("You do not have permission to perform this action", 403)
       );
     }
 
     if (!roles.includes(req.user.role as string)) {
       return next(
-        new AppError('You do not have permission to perform this action', 403)
+        new AppError("You do not have permission to perform this action", 403)
       );
     }
 
@@ -303,7 +206,7 @@ export const resetPassword = async (
   user.passwordResetToken = null;
   user.passwordResetExpiresAt = null;
 
-  const updatedUser = await prisma.user.update({
+  await prisma.user.update({
     where: { id: user.id },
     data: {
       password: req.body.password,
@@ -312,15 +215,10 @@ export const resetPassword = async (
     },
   });
 
-  sendToken(updatedUser, 200, res);
-};
-
-export const logout = (req: Request, res: Response) => {
-  res.cookie("jwt", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
+  res.status(200).json({
+    status: "success",
+    message: "Password updated successfully",
   });
-  res.status(200).json({ status: "success" });
 };
 
 // Update the updatePassword function
@@ -332,7 +230,7 @@ export const updatePassword = async (
   try {
     // 1) Get user from collection
     if (!req.user || !req.user.id) {
-      return next(new AppError('You are not logged in', 401));
+      return next(new AppError("You are not logged in", 401));
     }
 
     const user = await prisma.user.findUnique({
@@ -340,13 +238,13 @@ export const updatePassword = async (
     });
 
     if (!user) {
-      return next(new AppError('User not found', 404));
+      return next(new AppError("User not found", 404));
     }
-if(user.provider!=="System" ||!user.password)
-    return next(new AppError('Please Login With System Account', 401));
+    if (user.provider !== "System" || !user.password)
+      return next(new AppError("Please Login With System Account", 401));
     // 2) Check if POSTed current password is correct
     if (!(await bcrypt.compare(req.body.currentPassword, user.password))) {
-      return next(new AppError('Your current password is wrong', 401));
+      return next(new AppError("Your current password is wrong", 401));
     }
 
     // 3) If so, update password
@@ -361,7 +259,10 @@ if(user.provider!=="System" ||!user.password)
     });
 
     // 4) Log user in, send JWT
-    sendToken(user, 200, res);
+    res.status(200).json({
+      status: "success",
+      message: "Password updated successfully",
+    });
   } catch (err) {
     next(err);
   }

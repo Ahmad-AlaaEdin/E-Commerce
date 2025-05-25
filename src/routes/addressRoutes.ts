@@ -1,10 +1,10 @@
 import express from "express";
-import { protect } from "../controllers/authController";
+import { isLoggedIn } from "../controllers/authController";
 import { getMyAddress, upsertAddress } from "../controllers/addressController";
 
 const router = express.Router();
 
-router.use(protect);
+router.use(isLoggedIn);
 
 router.get("/", getMyAddress);
 router.post("/", upsertAddress);

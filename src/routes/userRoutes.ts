@@ -3,7 +3,7 @@ import {
   signup,
   login,
   logout,
-  protect,
+isLoggedIn,
   restrictTo,
   forgotPassword,
   resetPassword,
@@ -29,7 +29,7 @@ userRoutes.get("/logout", logout);
 userRoutes.post("/forgotPassword", forgotPassword);
 userRoutes.patch("/resetPassword/:token", resetPassword);
 
-userRoutes.use(protect);
+userRoutes.use(isLoggedIn);
 
 userRoutes.patch(
   "/updatePassword",
