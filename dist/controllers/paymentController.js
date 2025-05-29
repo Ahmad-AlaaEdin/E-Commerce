@@ -128,7 +128,6 @@ const paymentSuccess = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         if (!session) {
             return next(new appError_1.default("Invalid session ID", 400));
         }
-        // Find the order
         const order = yield prisma_1.default.order.findFirst({
             where: { paymentIntentId: session.payment_intent },
             include: { orderItems: true },
@@ -189,11 +188,15 @@ const payOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         const session = yield stripe.checkout.sessions.create({
             payment_method_types: ["card"],
             mode: "payment",
-            success_url: `${req.protocol}://${req.get("host")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${req.protocol}://${req.get("host")}/orders`,
             cancel_url: `${req.protocol}://${req.get("host")}/orders`,
             customer_email: req.user.email,
             client_reference_id: order.id,
             line_items: lineItems,
+            metadata: {
+                orderId: order.id,
+                userId: req.user.id,
+            },
         });
         // Update order with payment intent ID
         yield prisma_1.default.order.update({

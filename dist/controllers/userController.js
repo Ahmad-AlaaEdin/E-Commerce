@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.updateUser = exports.getAllUsers = exports.getUser = exports.getMe = exports.deleteMe = exports.updateMe = exports.uploadUserPhoto = void 0;
 const appError_1 = __importDefault(require("../utils/appError"));
 const prisma_1 = __importDefault(require("../config/prisma"));
-require("../types/express");
 const multer_1 = __importDefault(require("multer"));
 const cloudinary_1 = __importDefault(require("../config/cloudinary"));
 const multerStorage = multer_1.default.memoryStorage();
@@ -52,7 +51,7 @@ const updateMe = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     // 1) Create error if user POSTs password data
     if (req.body.password || req.body.passwordConfirm)
         return next(new appError_1.default("This route is not for password updates, use /updatePassword", 400));
-    const filteredBody = filterObj(req.body, "name", "email", "photo");
+    const filteredBody = filterObj(req.body, "name", "phone", "photo");
     // if (req.file) filteredBody.photo = req.file.filename;
     if (!req.user)
         return next(new appError_1.default("You are not logged in", 401));

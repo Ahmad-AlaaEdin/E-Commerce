@@ -90,7 +90,7 @@ const sendErrorProd = (err: any, req: Request, res: Response) => {
   // 1) Log error
   console.error('ERROR 💥', err);
   // 2) Send generic message
-  return res.status(err.statusCode).render('error', {
+  return res.status(err.statusCode).render('pages/error', {
     title: 'Error',
     msg: 'Something went wrong!', // <-- ensure 'msg' is passed
     user: req.user

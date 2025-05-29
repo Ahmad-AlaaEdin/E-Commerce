@@ -3,7 +3,7 @@ import AppError from "../utils/appError";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { User } from "@prisma/client";
-import {  createPasswordResetToken } from "../utils/auth";
+import { createPasswordResetToken } from "../utils/auth";
 import Email from "../utils/email";
 import crypto from "crypto";
 import passport from "../config/passport";
@@ -13,11 +13,16 @@ export const login = async (
   res: Response,
   next: NextFunction
 ) => {
-  passport.authenticate("local", (err:Error, user:User, info:any) => {
+  passport.authenticate("local", (err: Error, user: User, info: any) => {
     console.log("Login attempt:", { err, user, info }); // Add this line
     if (err) return next(err);
     if (!user) {
-      return res.status(401).json({ status: "fail", message: info?.message || "Invalid credentials" });
+      return res
+        .status(401)
+        .json({
+          status: "fail",
+          message: info?.message || "Invalid credentials",
+        });
     }
     req.logIn(user, (err) => {
       if (err) return next(err);
@@ -28,9 +33,9 @@ export const login = async (
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role
-          }
-        }
+            role: user.role,
+          },
+        },
       });
     });
   })(req, res, next);
@@ -94,7 +99,7 @@ export const isLoggedIn = async (
 ) => {
   if (req.isAuthenticated()) {
     return next();
-  }else{
+  } else {
     return next(new AppError("You are not logged in", 401));
   }
 };

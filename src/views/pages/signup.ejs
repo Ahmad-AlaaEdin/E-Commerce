@@ -1,0 +1,114 @@
+<%- contentFor('body') %>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">Create Account</h1>
+                    
+                    <% if (locals.error) { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form action="/api/v1/users/signup" method="POST" class="mb-4">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="form-text">We'll never share your email with anyone else.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   required minlength="8"
+                                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                                   title="Password must contain at least 8 characters, including uppercase, lowercase, numbers and special characters">
+                            <div class="form-text">
+                                Password must be at least 8 characters long and include:
+                                <ul class="mb-0">
+                                    <li>One uppercase letter</li>
+                                    <li>One lowercase letter</li>
+                                    <li>One number</li>
+                                    <li>One special character</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="passwordConfirm" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
+                            </label>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Create Account</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mb-4">
+                        <p class="mb-2">Or sign up with</p>
+                        <a href="/auth/google" class="btn btn-outline-danger">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" 
+                                 alt="Google" style="height: 18px; margin-right: 8px;">
+                            Continue with Google
+                        </a>
+                    </div>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account? <a href="/login">Login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-danger {
+    border-color: #4285f4;
+    color: #4285f4;
+}
+
+.btn-outline-danger:hover {
+    background-color: #4285f4;
+    border-color: #4285f4;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #80bdff;
+}
+
+.form-text ul {
+    padding-left: 1.2rem;
+    margin-top: 0.5rem;
+}
+</style>
+
+<script>
+document.getElementById('signup-form').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('passwordConfirm').value;
+    
+    if (password !== passwordConfirm) {
+        e.preventDefault();
+        alert('Passwords do not match!');
+    }
+});
+</script> 

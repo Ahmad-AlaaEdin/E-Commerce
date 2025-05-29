@@ -6,12 +6,7 @@ const prisma = new PrismaClient();
 
 type PrismaModelName = keyof Omit<
   PrismaClient,
-  | "$connect"
-  | "$disconnect"
-  | "$on"
-  | "$transaction"
-  | "$use"
-  | "$extends"
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
 
 // Options interface for more flexibility
@@ -22,28 +17,28 @@ interface FactoryOptions {
 }
 
 export const getAll = (
-  model: PrismaModelName, 
+  model: PrismaModelName,
   options: FactoryOptions = {}
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Build filter from query params
       const filter: Record<string, any> = {};
-      
+
       // Add search functionality if searchFields provided
       if (options.searchFields && req.query.search) {
         const searchTerm = req.query.search as string;
-        filter.OR = options.searchFields.map(field => ({
-          [field]: { contains: searchTerm, mode: 'insensitive' }
+        filter.OR = options.searchFields.map((field) => ({
+          [field]: { contains: searchTerm, mode: "insensitive" },
         }));
       }
-      
+
       // @ts-ignore - Dynamic access to Prisma models
       const docs = await prisma[model].findMany({
         where: filter,
         ...(options.populateFields && { include: options.populateFields }),
       });
-      
+
       res.status(200).json({
         status: "success",
         results: docs.length,
@@ -64,9 +59,9 @@ export const getOne = (
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const idField = options.idField || 'id';
+      const idField = options.idField || "id";
       const id = req.params.id;
-      
+
       // @ts-ignore - Dynamic access to Prisma models
       const doc = await prisma[model].findUnique({
         where: { [idField]: id },
@@ -74,7 +69,9 @@ export const getOne = (
       });
 
       if (!doc) {
-        return next(new AppError(`No ${model.toString} found with that ID`, 404));
+        return next(
+          new AppError(`No ${model.toString} found with that ID`, 404)
+        );
       }
 
       res.status(200).json({
@@ -119,9 +116,9 @@ export const updateOne = (
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const idField = options.idField || 'id';
+      const idField = options.idField || "id";
       const id = req.params.id;
-      
+
       // @ts-ignore - Dynamic access to Prisma models
       const doc = await prisma[model].update({
         where: { [idField]: id },
@@ -147,9 +144,9 @@ export const deleteOne = (
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const idField = options.idField || 'id';
+      const idField = options.idField || "id";
       const id = req.params.id;
-      
+
       // @ts-ignore - Dynamic access to Prisma models
       const doc = await prisma[model].delete({
         where: { [idField]: id },
@@ -174,8 +171,8 @@ export const getAllWithFilters = (
     try {
       // 1) Build the filter object
       const filter: Record<string, any> = {};
-      
-      filterFields.forEach(field => {
+
+      filterFields.forEach((field) => {
         if (req.query[field]) {
           filter[field] = req.query[field];
         }
@@ -184,8 +181,8 @@ export const getAllWithFilters = (
       // Add search functionality if searchFields provided
       if (options.searchFields && req.query.search) {
         const searchTerm = req.query.search as string;
-        filter.OR = options.searchFields.map(field => ({
-          [field]: { contains: searchTerm, mode: 'insensitive' }
+        filter.OR = options.searchFields.map((field) => ({
+          [field]: { contains: searchTerm, mode: "insensitive" },
         }));
       }
 
@@ -202,8 +199,8 @@ export const getAllWithFilters = (
         take: limit,
         ...(req.query.sort && {
           orderBy: {
-            [req.query.sort as string]: req.query.order || 'asc'
-          }
+            [req.query.sort as string]: req.query.order || "asc",
+          },
         }),
         ...(options.populateFields && { include: options.populateFields }),
       });
@@ -219,7 +216,7 @@ export const getAllWithFilters = (
           total,
           page,
           pages: Math.ceil(total / limit),
-          limit
+          limit,
         },
         data: {
           [model]: docs,

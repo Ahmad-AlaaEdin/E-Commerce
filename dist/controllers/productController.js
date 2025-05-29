@@ -43,7 +43,17 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.createProduct = createProduct;
 const getAllProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const products = yield prisma_1.default.product.findMany();
+    const query = req.query.search;
+    const products = yield prisma_1.default.product.findMany({
+        where: {
+            name: query
+                ? {
+                    contains: query,
+                    mode: "insensitive",
+                }
+                : undefined,
+        },
+    });
     res.status(200).json(products);
 });
 exports.getAllProducts = getAllProducts;

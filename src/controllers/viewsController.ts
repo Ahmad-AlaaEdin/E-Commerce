@@ -1,115 +1,138 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import prisma from "../config/prisma";
-import { Product } from "@prisma/client";
-import AppError from "../utils/appError";
+import { User } from "@prisma/client";
+
+interface AuthRequest extends Request {
+  user?: User;
+}
+
 export const getLoginForm = (req: Request, res: Response) => {
-  res.status(200).render("login", {
-    title: "Log into your account",
+  res.render("pages/login", {
+    title: "Login",
   });
 };
+
 export const getSignupForm = (req: Request, res: Response) => {
-  res.status(200).render("signup", {
-    title: "Create Account",
+  res.render("pages/signup", {
+    title: "Sign Up",
   });
 };
 
 export const getOverview = async (req: Request, res: Response) => {
-  const query = req.query.query as string | undefined;
+  try {
+    // Get recent products instead of featured ones
+    const recentProducts = await prisma.product.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 8,
+    });
 
-  const products: Product[] = await prisma.product.findMany({
-    where: {
-      name: query
-        ? {
-            contains: query,
-            mode: "insensitive" as const,
-          }
-        : undefined,
-    },
-  });
-  
-  const categories = await prisma.category.findMany({
-    include: { subCategories: true },
-  });
-  res.status(200).render("home", {
-    title: "All Products",
-    products,
-    categories,
-  });
+    // Get all categories
+    const categories = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
+    });
+
+    res.render("pages/home", {
+      title: "Home",
+      featuredProducts: recentProducts,
+      categories,
+    });
+  } catch (error) {
+    console.error("Error in getOverview:", error);
+    res.status(500).render("pages/error", {
+      title: "Error",
+      message: "Something went wrong!",
+    });
+  }
 };
 
 export const getAccount = (req: Request, res: Response) => {
-  res.status(200).render("account", {
-    title: "Your account",
+  res.render("pages/account", {
+    title: "My Account",
     user: req.user,
   });
 };
+
 export const getCategoryProducts = async (req: Request, res: Response) => {
-  const { slug } = req.params;
- 
-  const category = await prisma.category.findUnique({
-    where: { slug },
-  });
- 
-
-  let products: Product[] = [];
-  if (category) {
-    products = await prisma.product.findMany({
-      where: { categoryId: category.id },
-    });
-  }
-
-  const categories = await prisma.category.findMany({
-    include: { subCategories: true },
-  });
-
-  res.status(200).render("home", {
-    title: category ? `${category.name} Products` : "Products",
-    products,
-    categories,
-  });
-};
-export const getSubCategoryProducts = async (req: Request, res: Response) => {
-  const { category, slug } = req.params;
-  // Find the parent category by slug
-  const parentCategory = await prisma.category.findUnique({
-    where: { slug: category },
-  });
-
-  // Find the subcategory by slug and parent category id
-  const subCategory = await prisma.subCategory.findFirst({
-    where: {
-      slug: slug,
-      categoryId: parentCategory ? parentCategory.id : undefined,
-    },
-  });
-
-  let products: Product[] = [];
-  if (subCategory) {
-    products = await prisma.product.findMany({
-      where: { subCategoryId: subCategory.id },
-    });
-  }
-
-  const categories = await prisma.category.findMany({
-    include: { subCategories: true },
-  });
-
-  res.status(200).render("home", {
-    title: subCategory ? `${subCategory.name} Products` : "Products",
-    products,
-    categories,
-  });
-};
-
-export const getProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
   try {
-    const { id } = req.params;
+    const category = await prisma.category.findUnique({
+      where: {
+        slug: req.params.slug,
+      },
+      include: {
+        products: true,
+        subCategories: true,
+      },
+    });
+
+    if (!category) {
+      return res.status(404).render("pages/error", {
+        title: "Not Found",
+        message: "Category not found!",
+      });
+    }
+
+    res.render("pages/category", {
+      title: category.name,
+      category,
+    });
+  } catch (error) {
+    console.error("Error in getCategoryProducts:", error);
+    res.status(500).render("pages/error", {
+      title: "Error",
+      message: "Something went wrong!",
+    });
+  }
+};
+
+export const getSubCategoryProducts = async (req: Request, res: Response) => {
+  try {
+    const subCategory = await prisma.subCategory.findFirst({
+      where: {
+        slug: req.params.slug,
+        category: {
+          slug: req.params.category,
+        },
+      },
+      include: {
+        products: true,
+        category: true,
+      },
+    });
+
+    if (!subCategory) {
+      return res.status(404).render("pages/error", {
+        title: "Not Found",
+        message: "Subcategory not found!",
+      });
+    }
+
+    res.render("pages/subcategory", {
+      title: subCategory.name,
+      subCategory,
+    });
+  } catch (error) {
+    console.error("Error in getSubCategoryProducts:", error);
+    res.status(500).render("pages/error", {
+      title: "Error",
+      message: "Something went wrong!",
+    });
+  }
+};
+
+export const getProduct = async (req: Request, res: Response) => {
+  try {
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: {
+        id: req.params.id,
+      },
       include: {
         category: true,
         subCategory: true,
@@ -117,54 +140,69 @@ export const getProduct = async (
     });
 
     if (!product) {
-      return res.status(404).render("404", {
-        title: "Product Not Found",
-        message: "The product you are looking for does not exist.",
+      return res.status(404).render("pages/error", {
+        title: "Not Found",
+        message: "Product not found!",
       });
     }
 
-    res.status(200).render("product", {
+    // Get related products
+    const relatedProducts = await prisma.product.findMany({
+      where: {
+        categoryId: product.categoryId,
+        NOT: {
+          id: product.id,
+        },
+      },
+      take: 4,
+    });
+
+    res.render("pages/product", {
       title: product.name,
       product,
+      relatedProducts,
     });
   } catch (error) {
-    next(error);
+    console.error("Error in getProduct:", error);
+    res.status(500).render("error", {
+      title: "Error",
+      message: "Something went wrong!",
+    });
   }
 };
 
-export const getCheckout = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.user) return next(new AppError("You are not logged in", 401));
+export const getCheckout = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.redirect("/login");
+    }
 
-  // Get the user's cart
-  const cart = await prisma.cart.findUnique({
-    where: { userId: req.user.id },
-    include: {
-      items: {
-        include: {
-          product: true,
+    const cart = await prisma.cart.findUnique({
+      where: {
+        userId: req.user.id,
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!cart || !cart.items.length) {
-    return res.redirect("/");
+    if (!cart || cart.items.length === 0) {
+      return res.redirect("/cart");
+    }
+
+    res.render("pages/checkout", {
+      title: "Checkout",
+      cart,
+    });
+  } catch (error) {
+    console.error("Error in getCheckout:", error);
+    res.status(500).render("error", {
+      title: "Error",
+      message: "Something went wrong!",
+    });
   }
-
-  // Calculate total
-  const total = cart.items.reduce(
-    (sum, item) => sum + item.quantity * item.product.price,
-    0
-  );
-
-  res.status(200).render("checkout", {
-    title: "Checkout",
-    cart,
-    total,
-    user: req.user,
-  });
 };

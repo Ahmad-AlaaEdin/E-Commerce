@@ -9,13 +9,13 @@ const paymentController_1 = require("../controllers/paymentController");
 const router = express_1.default.Router();
 // Webhook route needs raw body, so it should be before any body parsers
 // This route should be handled differently
-router.post('/webhook', express_1.default.raw({ type: 'application/json' }), paymentController_1.webhookCheckout);
+router.post("/webhook", express_1.default.raw({ type: "application/json" }), paymentController_1.webhookCheckout);
 // Protected routes
-router.use(authController_1.protect);
+router.use(authController_1.isLoggedIn);
 // Get checkout session
-router.get('/checkout-session/:cartId', paymentController_1.getCheckoutSession);
-// Payment success page
-router.get('/success', paymentController_1.paymentSuccess);
+router.get("/checkout-session/:cartId", paymentController_1.getCheckoutSession);
+// Payment success page - Change this to match the success_url in your controller
+router.get("/payment-success/", paymentController_1.paymentSuccess);
 // Pay for an existing order
-router.post('/', paymentController_1.payOrder);
+router.post("/", paymentController_1.payOrder);
 exports.default = router;

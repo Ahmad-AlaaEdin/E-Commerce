@@ -31,7 +31,7 @@ const placeOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             userId: req.user.id,
             total,
             orderItems: {
-                create: cart.items.map(item => ({
+                create: cart.items.map((item) => ({
                     productId: item.productId,
                     quantity: item.quantity,
                     price: item.product.price,
@@ -49,6 +49,7 @@ exports.placeOrder = placeOrder;
 const getMyOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.user)
         return next(new appError_1.default("You are not logged in", 401));
+    console.log(req.user);
     const orders = yield prisma_1.default.order.findMany({
         where: { userId: req.user.id },
         include: { orderItems: true },

@@ -23,46 +23,60 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePassword = exports.logout = exports.resetPassword = exports.forgotPassword = exports.restrictTo = exports.isLoggedIn = exports.protect = exports.login = exports.signup = void 0;
+exports.updatePassword = exports.resetPassword = exports.forgotPassword = exports.restrictTo = exports.isLoggedIn = exports.signup = exports.logout = exports.googleCallback = exports.googleAuth = exports.login = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const appError_1 = __importDefault(require("../utils/appError"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth_1 = require("../utils/auth");
 const email_1 = __importDefault(require("../utils/email"));
 const crypto_1 = __importDefault(require("crypto"));
-require("../types/express");
-const signToken = (userID) => {
-    console.log("signToken");
-    return jsonwebtoken_1.default.sign({ id: userID }, process.env.JWT_SECRET || "", {
-        expiresIn: "30d",
+const passport_1 = __importDefault(require("../config/passport"));
+const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    passport_1.default.authenticate("local", (err, user, info) => {
+        console.log("Login attempt:", { err, user, info }); // Add this line
+        if (err)
+            return next(err);
+        if (!user) {
+            return res.status(401).json({ status: "fail", message: (info === null || info === void 0 ? void 0 : info.message) || "Invalid credentials" });
+        }
+        req.logIn(user, (err) => {
+            if (err)
+                return next(err);
+            return res.status(200).json({
+                status: "success",
+                data: {
+                    user: {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role
+                    }
+                }
+            });
+        });
+    })(req, res, next);
+});
+exports.login = login;
+const googleAuth = (req, res, next) => {
+    passport_1.default.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+};
+exports.googleAuth = googleAuth;
+const googleCallback = (req, res, next) => {
+    passport_1.default.authenticate("google", {
+        failureRedirect: "/error",
+        successRedirect: "/",
+    })(req, res, next);
+};
+exports.googleCallback = googleCallback;
+const logout = (req, res, next) => {
+    req.logout(() => {
+        req.session.destroy(() => {
+            res.clearCookie("connect.sid");
+            res.json({ message: "Logged out" });
+        });
     });
 };
-const sendToken = (user, statusCode, res) => {
-    const token = signToken(user.id);
-    const cookieOptions = {
-        expires: new Date(Date.now() +
-            parseInt(process.env.JWT_COOKIE_EXPIRES_IN || "30") *
-                24 *
-                60 *
-                60 *
-                1000),
-        httpOnly: true,
-    };
-    console.log("sendToken");
-    if (process.env.NODE_ENV === "production")
-        cookieOptions.secure = true;
-    res.cookie("jwt", token, cookieOptions);
-    // Remove password from output
-    const { password: userPassword } = user, safeUser = __rest(user, ["password"]);
-    res.status(statusCode).json({
-        status: "success",
-        token,
-        data: {
-            safeUser,
-        },
-    });
-};
+exports.logout = logout;
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password, passwordConfirm } = req.body;
     const user = yield prisma_1.default.user.findUnique({
@@ -77,94 +91,33 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         throw new appError_1.default("Passwords do not match", 400);
     }
     const newUser = yield prisma_1.default.user.create({ data: { email, password, name } });
-    sendToken(newUser, 201, res);
+    const { password: _ } = newUser, safeUser = __rest(newUser, ["password"]);
+    res.status(201).json({
+        status: "success",
+        data: {
+            user: safeUser,
+        },
+    });
 });
 exports.signup = signup;
-const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        throw new appError_1.default("Please provide email and password", 400);
+const isLoggedIn = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.isAuthenticated()) {
+        return next();
     }
-    const user = yield prisma_1.default.user.findUnique({
-        where: {
-            email: email,
-        },
-    });
-    if (!user || !(yield bcrypt_1.default.compare(password, user.password))) {
-        throw new appError_1.default("Incorrect  Email or Password", 401);
-    }
-    sendToken(user, 200, res);
-});
-exports.login = login;
-const protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // Check Token
-    console.log("protect");
-    let token;
-    if (req.headers.authorization &&
-        req.headers.authorization.startsWith("Bearer")) {
-        token = req.headers.authorization.split(" ")[1];
-    }
-    else if (req.cookies.jwt) {
-        token = req.cookies.jwt;
-    }
-    if (!token) {
+    else {
         return next(new appError_1.default("You are not logged in", 401));
     }
-    //Verification Token
-    const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-    //Check if user still exist
-    const user = yield prisma_1.default.user.findUnique({
-        where: {
-            id: decoded.id,
-        },
-    });
-    if (!user)
-        throw new appError_1.default("The User belonging to this token no longer exists.", 401);
-    //Check if password changed after token was issued
-    if ((0, auth_1.changedPasswordAfter)(user, decoded.iat)) {
-        throw new appError_1.default("User Recently Changed password! please log in again.", 401);
-    }
-    req.user = user;
-    console.log("protect22");
-    next();
-});
-exports.protect = protect;
-const isLoggedIn = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.cookies.jwt) {
-        try {
-            // 1) verify token
-            const decoded = jsonwebtoken_1.default.verify(req.cookies.jwt, process.env.JWT_SECRET || "");
-            // 2) Check if user still exists
-            const currentUser = yield prisma_1.default.user.findUnique({
-                where: {
-                    id: decoded.id,
-                },
-            });
-            if (!currentUser) {
-                return next();
-            }
-            // 3) Check if user changed password after the token was issued
-            if ((0, auth_1.changedPasswordAfter)(currentUser, decoded.iat)) {
-                return next();
-            }
-            // THERE IS A LOGGED IN USER
-            res.locals.user = currentUser;
-            return next();
-        }
-        catch (err) {
-            return next();
-        }
-    }
-    next();
 });
 exports.isLoggedIn = isLoggedIn;
+// Update the restrictTo function
 const restrictTo = (...roles) => {
     return (req, res, next) => {
-        if (!req.user) {
-            return next(new appError_1.default("You are not logged in", 401));
+        // Check if user exists and has a role property
+        if (!req.user || !req.user.role) {
+            return next(new appError_1.default("You do not have permission to perform this action", 403));
         }
         if (!roles.includes(req.user.role)) {
-            throw new appError_1.default("You do not have a permission to perform this action", 403);
+            return next(new appError_1.default("You do not have permission to perform this action", 403));
         }
         next();
     };
@@ -237,7 +190,7 @@ const resetPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     user.password = req.body.password;
     user.passwordResetToken = null;
     user.passwordResetExpiresAt = null;
-    const updatedUser = yield prisma_1.default.user.update({
+    yield prisma_1.default.user.update({
         where: { id: user.id },
         data: {
             password: req.body.password,
@@ -245,40 +198,48 @@ const resetPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             passwordResetExpiresAt: null,
         },
     });
-    sendToken(updatedUser, 200, res);
+    res.status(200).json({
+        status: "success",
+        message: "Password updated successfully",
+    });
 });
 exports.resetPassword = resetPassword;
-const logout = (req, res) => {
-    res.cookie("jwt", "loggedout", {
-        expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true,
-    });
-    res.status(200).json({ status: "success" });
-};
-exports.logout = logout;
+// Update the updatePassword function
 const updatePassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!req.user) {
-        return next(new appError_1.default("You are not logged in", 401));
+    try {
+        // 1) Get user from collection
+        if (!req.user || !req.user.id) {
+            return next(new appError_1.default("You are not logged in", 401));
+        }
+        const user = yield prisma_1.default.user.findUnique({
+            where: { id: req.user.id },
+        });
+        if (!user) {
+            return next(new appError_1.default("User not found", 404));
+        }
+        if (user.provider !== "System" || !user.password)
+            return next(new appError_1.default("Please Login With System Account", 401));
+        // 2) Check if POSTed current password is correct
+        if (!(yield bcrypt_1.default.compare(req.body.currentPassword, user.password))) {
+            return next(new appError_1.default("Your current password is wrong", 401));
+        }
+        // 3) If so, update password
+        const hashedPassword = yield bcrypt_1.default.hash(req.body.password, 12);
+        yield prisma_1.default.user.update({
+            where: { id: req.user.id },
+            data: {
+                password: hashedPassword,
+                passwordChangedAt: new Date(),
+            },
+        });
+        // 4) Log user in, send JWT
+        res.status(200).json({
+            status: "success",
+            message: "Password updated successfully",
+        });
     }
-    if (!req.body.currentPassword ||
-        !req.body.password ||
-        !req.body.passwordConfirm) {
-        throw new appError_1.default("Please provide current password, new password and confirm password", 400);
+    catch (err) {
+        next(err);
     }
-    if (!(yield bcrypt_1.default.compare(req.body.currentPassword, req.user.password))) {
-        throw new appError_1.default("Incorrect  Email or Password", 401);
-    }
-    if (req.body.password !== req.body.passwordConfirm) {
-        throw new appError_1.default("Passwords do not match", 400);
-    }
-    const updatedUser = yield prisma_1.default.user.update({
-        where: { id: req.user.id },
-        data: {
-            password: req.body.password,
-            passwordResetToken: null,
-            passwordResetExpiresAt: null,
-        },
-    });
-    sendToken(updatedUser, 200, res);
 });
 exports.updatePassword = updatePassword;

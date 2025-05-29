@@ -1,0 +1,75 @@
+<%- contentFor('body') %>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">Login</h1>
+                    
+                    <% if (locals.error) { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form action="/api/v1/users/login" method="POST" class="mb-4">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">Remember me</label>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mb-4">
+                        <p class="mb-2">Or login with</p>
+                        <a href="/auth/google" class="btn btn-outline-danger">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" 
+                                 alt="Google" style="height: 18px; margin-right: 8px;">
+                            Continue with Google
+                        </a>
+                    </div>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <p class="mb-0">Don't have an account? <a href="/signup">Sign up</a></p>
+                        <p class="mt-2"><a href="/forgot-password">Forgot your password?</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-danger {
+    border-color: #4285f4;
+    color: #4285f4;
+}
+
+.btn-outline-danger:hover {
+    background-color: #4285f4;
+    border-color: #4285f4;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #80bdff;
+}
+</style> 

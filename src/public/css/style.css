@@ -1,405 +1,74 @@
-/* Reset & Base */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* General Styles */
 body {
-  font-family: "Helvetica Neue", sans-serif;
-  background: #f9f9f9;
-  color: #222;
-}
-
-/* Header container */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  background: #ffffff;
-  border-bottom: 1px solid #eee;
-}
-
-/* Logo */
-header h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #111;
-  letter-spacing: 1px;
-}
-
-/* Search form */
-header form {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  padding: 6px 12px;
-  background: #fff;
-  transition: border-color 0.3s;
-}
-
-header form:focus-within {
-  border-color: #111;
-}
-
-header input[type="text"] {
-  border: none;
-  outline: none;
-  padding: 6px;
-  font-size: 14px;
-  background: transparent;
-  width: 180px;
-  color: #333;
-}
-
-header button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  font-size: 16px;
-  padding: 6px;
-  transition: color 0.2s;
-}
-
-header button:hover {
-  color: #000;
-}
-
-/* Right side container */
-header > div {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-/* Profile block */
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.profile img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #ccc;
-}
-
-.profile span {
-  font-size: 14px;
-  color: #333;
-}
-
-/* Cart */
-.cart {
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: #444;
-  cursor: pointer;
-}
-
-.cart:hover {
-  color: #000;
-}
-
-/* Auth links */
-a {
-  text-decoration: none;
-  color: #555;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-
-a:hover {
-  color: #000;
-}
-footer {
-  background-color: #ffffff;
-  border-top: 1px solid #eee;
-  padding: 20px 40px;
-  margin-top: 40px;
-}
-
-.footer-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: #666;
-}
-
-.footer-links {
-  display: flex;
-  gap: 20px;
-}
-
-.footer-links a {
-  color: #666;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.footer-links a:hover {
-  color: #000;
-}
-
-/* Mobile responsiveness */
-
-/* Hamburger menu button */
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 22px;
-  color: #333;
-  cursor: pointer;
-}
-
-/* Navigation actions */
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  transition: all 0.3s ease;
-}
-
-/* Responsive styles */
-@media (max-width: 768px) {
-  /* Header layout */
-  header {
-    flex-wrap: wrap;
-    padding: 15px 20px;
-  }
-
-  /* Logo and menu toggle in the same row */
-  header h1 {
-    flex: 1;
-    margin-right: 10px;
-    font-size: 20px;
-  }
-
-  .menu-toggle {
-    display: block;
-    order: 2;
-  }
-
-  /* Search form takes full width in second row */
-  header form {
-    order: 3;
-    width: 100%;
-    margin: 15px 0;
-  }
-
-  header input[type="text"] {
-    width: 100%;
-  }
-
-  /* Navigation actions in third row when expanded */
-  .nav-actions {
-    order: 4;
-    width: 100%;
-    max-height: 0;
-    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .nav-actions.show {
-    max-height: 200px;
-    padding-top: 10px;
-  }
-
-  /* Profile adjustments */
-  .profile span {
-    display: inline-block; /* Show name on mobile */
-  }
-
-  /* Right side container (now nav-actions) */
-  header > div {
-    width: 100%;
-    justify-content: flex-start;
-  }
 }
 
-/* Card container */
-.card {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  width: 100%;
-  height: 420px; /* Increased fixed height to accommodate all content */
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  margin: 0; /* Remove margin to ensure grid spacing works properly */
-  position: relative; /* For absolute positioning of elements if needed */
-}
-
-/* Hover effect to lift card */
-.card:hover {
-  transform: translateY(-5px); /* Reduced lift amount */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* Card image */
-.card img {
-  width: 100%;
-  height: 180px; /* Slightly reduced height for images */
-  object-fit: cover;
-  border-bottom: 1px solid #ddd;
-}
-
-/* Card body */
-.card-body {
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* Reduced gap */
-  flex: 1; /* Make card body take remaining space */
-  justify-content: space-between; /* Distribute space evenly */
-}
-
-/* Card title */
-.card-title {
-  font-size: 16px; /* Slightly smaller font */
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-  line-height: 1.3;
-  /* Limit to 2 lines with ellipsis */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 42px; /* Fixed height for title area */
-  max-height: 42px;
-}
-
-/* Card description */
-.card-text {
-  font-size: 14px;
-  color: #555;
-  line-height: 1.5;
-  margin: 0;
-  /* Limit to 3 lines with ellipsis */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  height: 63px; /* Fixed height for description (3 lines) */
-}
-
-/* Card price */
-.card-price {
-  font-size: 16px;
-  color: #333;
-  font-weight: 600;
-  margin-top: auto; /* Push to bottom of flex container */
-}
-
-/* Card actions container */
-.card-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Add to Cart Button */
-.card-actions button {
-  background-color: #00d9ff;
-  color: white;
-  border: none;
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 25px;
-  transition: background-color 0.3s;
-  width: 100%;
-  margin-top: 10px;
-  text-align: center;
-}
-
-.card-actions button:hover {
-  background-color: #0099cc;
-}
-
-/* Card action links (View Details) */
-.card-actions .view-details {
-  text-decoration: none;
-  color: #00d9ff;
-  font-size: 14px;
-  transition: color 0.3s;
-}
-
-.card-actions .view-details:hover {
-  color: #0099cc;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 600px) {
-  .card {
-    max-width: 100%;
-    margin: 10px;
-  }
-
-  .card img {
-    height: 180px;
-  }
-
-  .card-body {
-    padding: 10px;
-  }
-
-  .card-title {
-    font-size: 16px;
-  }
-
-  .card-text {
-    font-size: 12px;
-  }
-
-  .card-actions button {
-    font-size: 14px;
-    padding: 8px;
-  }
-}
-
-/* Main container padding */
 main {
-  padding: 40px 20px;
-  background-color: #f9f9f9;
+    flex: 1;
 }
 
-/* Grid container for product cards */
-.product-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 30px;
-  justify-content: center;
-  align-items: start;
-  max-width: 1200px;
-  margin: 0 auto;
+/* Navigation */
+.navbar-brand {
+    font-weight: bold;
 }
+
+/* Hero Section */
+.hero-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+/* Product Cards */
 .card {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeUp 0.5s ease forwards;
-  animation-delay: 0.1s;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.card:hover {
+    transform: translateY(-5px);
 }
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Footer */
+footer {
+    background-color: #f8f9fa;
+    margin-top: auto;
+}
+
+footer a {
+    color: #333;
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #007bff;
+}
+
+/* Responsive Images */
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Custom Buttons */
+.btn-primary {
+    padding: 0.5rem 1.5rem;
+}
+
+/* Category Cards */
+.categories .card {
+    border: none;
+    background-color: #f8f9fa;
+}
+
+/* Price Text */
+.card-text strong {
+    color: #28a745;
+    font-size: 1.2rem;
+} 
