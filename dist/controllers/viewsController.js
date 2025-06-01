@@ -12,17 +12,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCheckout = exports.getProduct = exports.getSubCategoryProducts = exports.getCategoryProducts = exports.getAccount = exports.getOverview = exports.getSignupForm = exports.getLoginForm = void 0;
+exports.getCheckout = exports.getProduct = exports.getSubCategoryProducts = exports.getCategoryProducts = exports.getAccount = exports.getOverview = exports.getSignupForm = exports.getLoginForm = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
+const getAllProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const products = yield prisma_1.default.product.findMany({
+        include: {
+            category: true,
+            subCategory: true,
+        },
+    });
+    res.render("pages/products", {
+        title: "Products",
+        products,
+    });
+});
+exports.getAllProducts = getAllProducts;
 const getLoginForm = (req, res) => {
     res.render("pages/login", {
-        title: "Login"
+        title: "Login",
     });
 };
 exports.getLoginForm = getLoginForm;
 const getSignupForm = (req, res) => {
     res.render("pages/signup", {
-        title: "Sign Up"
+        title: "Sign Up",
     });
 };
 exports.getSignupForm = getSignupForm;
@@ -31,31 +44,32 @@ const getOverview = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // Get recent products instead of featured ones
         const recentProducts = yield prisma_1.default.product.findMany({
             orderBy: {
-                createdAt: 'desc'
+                createdAt: "desc",
             },
-            take: 8
+            take: 8,
         });
-        // Get all categories
+        // Get all categories with their subcategories
         const categories = yield prisma_1.default.category.findMany({
             include: {
+                subCategories: true,
                 _count: {
                     select: {
-                        products: true
-                    }
-                }
-            }
+                        products: true,
+                    },
+                },
+            },
         });
         res.render("pages/home", {
             title: "Home",
             featuredProducts: recentProducts,
-            categories
+            categories,
         });
     }
     catch (error) {
         console.error("Error in getOverview:", error);
         res.status(500).render("pages/error", {
             title: "Error",
-            message: "Something went wrong!"
+            message: "Something went wrong!",
         });
     }
 });
@@ -63,7 +77,7 @@ exports.getOverview = getOverview;
 const getAccount = (req, res) => {
     res.render("pages/account", {
         title: "My Account",
-        user: req.user
+        user: req.user,
     });
 };
 exports.getAccount = getAccount;
@@ -71,29 +85,29 @@ const getCategoryProducts = (req, res) => __awaiter(void 0, void 0, void 0, func
     try {
         const category = yield prisma_1.default.category.findUnique({
             where: {
-                slug: req.params.slug
+                slug: req.params.slug,
             },
             include: {
                 products: true,
-                subCategories: true
-            }
+                subCategories: true,
+            },
         });
         if (!category) {
             return res.status(404).render("pages/error", {
                 title: "Not Found",
-                message: "Category not found!"
+                message: "Category not found!",
             });
         }
         res.render("pages/category", {
             title: category.name,
-            category
+            category,
         });
     }
     catch (error) {
         console.error("Error in getCategoryProducts:", error);
         res.status(500).render("pages/error", {
             title: "Error",
-            message: "Something went wrong!"
+            message: "Something went wrong!",
         });
     }
 });
@@ -104,30 +118,32 @@ const getSubCategoryProducts = (req, res) => __awaiter(void 0, void 0, void 0, f
             where: {
                 slug: req.params.slug,
                 category: {
-                    slug: req.params.category
-                }
+                    slug: req.params.category,
+                },
             },
             include: {
                 products: true,
-                category: true
-            }
+                category: true,
+            },
         });
         if (!subCategory) {
             return res.status(404).render("pages/error", {
                 title: "Not Found",
-                message: "Subcategory not found!"
+                message: "Subcategory not found!",
             });
         }
-        res.render("pages/subcategory", {
+        res.render("pages/products", {
             title: subCategory.name,
-            subCategory
+            subCategory,
+            products: subCategory.products,
+            category: subCategory.category,
         });
     }
     catch (error) {
         console.error("Error in getSubCategoryProducts:", error);
         res.status(500).render("pages/error", {
             title: "Error",
-            message: "Something went wrong!"
+            message: "Something went wrong!",
         });
     }
 });
@@ -136,17 +152,17 @@ const getProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const product = yield prisma_1.default.product.findUnique({
             where: {
-                id: req.params.id
+                id: req.params.id,
             },
             include: {
                 category: true,
-                subCategory: true
-            }
+                subCategory: true,
+            },
         });
         if (!product) {
             return res.status(404).render("pages/error", {
                 title: "Not Found",
-                message: "Product not found!"
+                message: "Product not found!",
             });
         }
         // Get related products
@@ -154,22 +170,22 @@ const getProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             where: {
                 categoryId: product.categoryId,
                 NOT: {
-                    id: product.id
-                }
+                    id: product.id,
+                },
             },
-            take: 4
+            take: 4,
         });
-        res.render("pages/product", {
+        res.render("pages/product-details", {
             title: product.name,
             product,
-            relatedProducts
+            relatedProducts,
         });
     }
     catch (error) {
         console.error("Error in getProduct:", error);
         res.status(500).render("error", {
             title: "Error",
-            message: "Something went wrong!"
+            message: "Something went wrong!",
         });
     }
 });
@@ -181,29 +197,29 @@ const getCheckout = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         const cart = yield prisma_1.default.cart.findUnique({
             where: {
-                userId: req.user.id
+                userId: req.user.id,
             },
             include: {
                 items: {
                     include: {
-                        product: true
-                    }
-                }
-            }
+                        product: true,
+                    },
+                },
+            },
         });
         if (!cart || cart.items.length === 0) {
             return res.redirect("/cart");
         }
         res.render("pages/checkout", {
             title: "Checkout",
-            cart
+            cart,
         });
     }
     catch (error) {
         console.error("Error in getCheckout:", error);
         res.status(500).render("error", {
             title: "Error",
-            message: "Something went wrong!"
+            message: "Something went wrong!",
         });
     }
 });

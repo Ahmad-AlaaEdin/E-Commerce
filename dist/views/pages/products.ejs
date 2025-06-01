@@ -1,0 +1,230 @@
+<%- contentFor('body') %>
+
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <% if (locals.category) { %>
+      <li class="breadcrumb-item"><%= category.name %></li>
+      <% if (locals.subCategory) { %>
+      <li class="breadcrumb-item active" aria-current="page">
+        <%= subCategory.name %>
+      </li>
+      <% } %> <% } else if (locals.searchQuery) { %>
+      <li class="breadcrumb-item active" aria-current="page">
+        Search Results: "<%= searchQuery %>"
+      </li>
+      <% } else { %>
+      <li class="breadcrumb-item active" aria-current="page">All Products</li>
+      <% } %>
+    </ol>
+  </nav>
+
+  <!-- Page Title and Description -->
+  <div class="mb-4">
+    <% if (locals.category) { %>
+    <h1><%= category.name %></h1>
+    <% if (category.description) { %>
+    <p class="lead"><%= category.description %></p>
+    <% } %> <% if (locals.subCategory) { %>
+    <h2 class="h4"><%= subCategory.name %></h2>
+    <% if (subCategory.description) { %>
+    <p><%= subCategory.description %></p>
+    <% } %> <% } %> <% } else if (locals.searchQuery) { %>
+    <h1>Search Results</h1>
+    <p class="lead">Showing results for "<%= searchQuery %>"</p>
+    <% } else { %>
+    <h1>All Products</h1>
+    <p class="lead">Browse our complete collection</p>
+    <% } %>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <form class="d-flex" action="/search" method="GET">
+        <input
+          class="form-control me-2"
+          type="search"
+          placeholder="Search products..."
+          name="q"
+          value="<%= locals.searchQuery || '' %>"
+          aria-label="Search"
+        />
+        <button class="btn btn-outline-primary" type="submit">Search</button>
+      </form>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" id="sortProducts">
+        <option value="default">Sort by</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="name-asc">Name: A to Z</option>
+        <option value="name-desc">Name: Z to A</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <div class="row">
+    <% if (locals.products && products.length > 0) { %> <%
+    products.forEach(product => { %>
+    <div class="col-md-4 col-lg-3 mb-4 d-flex">
+      <a
+        href="/product/<%= product.id %>"
+        class="text-decoration-none text-dark w-100 d-flex"
+      >
+        <div class="card h-100 d-flex flex-column w-100">
+          <% if (product.image) { %>
+          <img
+            src="<%= product.image %>"
+            class="card-img-top"
+            alt="<%= product.name %>"
+            style="height: 200px; object-fit: contain; padding: 1rem"
+          />
+          <% } %>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title"><%= product.name %></h5>
+            <p
+              class="card-text flex-grow-1"
+              style="
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+              "
+            >
+              <%= product.description.length > 100 ?
+              product.description.substring(0, 100) + "..." :
+              product.description %>
+            </p>
+            <div
+              class="d-flex justify-content-between align-items-center mt-auto"
+            >
+              <span class="h5 mb-0">$<%= product.price.toFixed(2) %></span>
+              <% if (product.stock > 0) { %>
+              <button
+                class="btn btn-primary btn-sm add-to-cart"
+                data-product-id="<%= product.id %>"
+                data-product-name="<%= product.name %>"
+                data-product-price="<%= product.price %>"
+                onclick="event.preventDefault(); event.stopPropagation();"
+              >
+                Add to Cart
+              </button>
+              <% } else { %>
+              <button class="btn btn-dark btn-sm" disabled>Out of Stock</button>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <% }); %> <% } else { %>
+    <div class="col">
+      <div class="alert alert-info">
+        No products found. <% if (locals.searchQuery) { %> Try different search
+        terms or browse our categories. <% } %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Pagination -->
+  <% if (locals.totalPages && totalPages > 1) { %>
+  <nav aria-label="Product navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      <% for(let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+        <a
+          class="page-link"
+          href="?page=<%= i %><%= locals.searchQuery ? '&q=' + searchQuery : '' %>"
+        >
+          <%= i %>
+        </a>
+      </li>
+      <% } %>
+    </ul>
+  </nav>
+  <% } %>
+</div>
+
+<!-- Add to Cart Success Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div
+    id="addToCartToast"
+    class="toast"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="toast-header">
+      <strong class="me-auto">Success</strong>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="toast-body">Product added to cart successfully!</div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Sort functionality
+    const sortSelect = document.getElementById("sortProducts");
+    sortSelect.addEventListener("change", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set("sort", this.value);
+      window.location.search = urlParams.toString();
+    });
+
+    // Set initial sort value from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sortValue = urlParams.get("sort");
+    if (sortValue) {
+      sortSelect.value = sortValue;
+    }
+
+    // Add to cart functionality
+    const addToCartButtons = document.querySelectorAll(".add-to-cart");
+    const toast = new bootstrap.Toast(
+      document.getElementById("addToCartToast")
+    );
+
+    addToCartButtons.forEach((button) => {
+      button.addEventListener("click", async function () {
+        const productId = this.dataset.productId;
+        try {
+          const response = await fetch("/cart", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              productId,
+              quantity: 1,
+            }),
+          });
+
+          if (response.ok) {
+            toast.show();
+            // Update mini cart if it exists
+            if (typeof updateMiniCart === "function") {
+              updateMiniCart();
+            }
+          } else {
+            throw new Error("Failed to add to cart");
+          }
+        } catch (error) {
+          console.error("Error adding to cart:", error);
+          alert("Failed to add product to cart. Please try again.");
+        }
+      });
+    });
+  });
+</script>

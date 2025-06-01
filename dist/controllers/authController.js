@@ -37,7 +37,12 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         if (err)
             return next(err);
         if (!user) {
-            return res.status(401).json({ status: "fail", message: (info === null || info === void 0 ? void 0 : info.message) || "Invalid credentials" });
+            return res
+                .status(401)
+                .json({
+                status: "fail",
+                message: (info === null || info === void 0 ? void 0 : info.message) || "Invalid credentials",
+            });
         }
         req.logIn(user, (err) => {
             if (err)
@@ -49,9 +54,9 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        role: user.role
-                    }
-                }
+                        role: user.role,
+                    },
+                },
             });
         });
     })(req, res, next);

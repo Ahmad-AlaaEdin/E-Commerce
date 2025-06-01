@@ -24,8 +24,8 @@ const getAll = (model, options = {}) => {
             // Add search functionality if searchFields provided
             if (options.searchFields && req.query.search) {
                 const searchTerm = req.query.search;
-                filter.OR = options.searchFields.map(field => ({
-                    [field]: { contains: searchTerm, mode: 'insensitive' }
+                filter.OR = options.searchFields.map((field) => ({
+                    [field]: { contains: searchTerm, mode: "insensitive" },
                 }));
             }
             // @ts-ignore - Dynamic access to Prisma models
@@ -47,7 +47,7 @@ exports.getAll = getAll;
 const getOne = (model, includeOptions, options = {}) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const idField = options.idField || 'id';
+            const idField = options.idField || "id";
             const id = req.params.id;
             // @ts-ignore - Dynamic access to Prisma models
             const doc = yield prisma[model].findUnique(Object.assign({ where: { [idField]: id } }, (includeOptions && { include: includeOptions })));
@@ -88,7 +88,7 @@ exports.createOne = createOne;
 const updateOne = (model, options = {}) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const idField = options.idField || 'id';
+            const idField = options.idField || "id";
             const id = req.params.id;
             // @ts-ignore - Dynamic access to Prisma models
             const doc = yield prisma[model].update(Object.assign({ where: { [idField]: id }, data: req.body }, (options.populateFields && { include: options.populateFields })));
@@ -108,7 +108,7 @@ exports.updateOne = updateOne;
 const deleteOne = (model, options = {}) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const idField = options.idField || 'id';
+            const idField = options.idField || "id";
             const id = req.params.id;
             // @ts-ignore - Dynamic access to Prisma models
             const doc = yield prisma[model].delete({
@@ -130,7 +130,7 @@ const getAllWithFilters = (model, filterFields = [], options = {}) => {
         try {
             // 1) Build the filter object
             const filter = {};
-            filterFields.forEach(field => {
+            filterFields.forEach((field) => {
                 if (req.query[field]) {
                     filter[field] = req.query[field];
                 }
@@ -138,8 +138,8 @@ const getAllWithFilters = (model, filterFields = [], options = {}) => {
             // Add search functionality if searchFields provided
             if (options.searchFields && req.query.search) {
                 const searchTerm = req.query.search;
-                filter.OR = options.searchFields.map(field => ({
-                    [field]: { contains: searchTerm, mode: 'insensitive' }
+                filter.OR = options.searchFields.map((field) => ({
+                    [field]: { contains: searchTerm, mode: "insensitive" },
                 }));
             }
             // 2) Pagination
@@ -150,8 +150,8 @@ const getAllWithFilters = (model, filterFields = [], options = {}) => {
             // @ts-ignore - Dynamic access to Prisma models
             const docs = yield prisma[model].findMany(Object.assign(Object.assign({ where: filter, skip, take: limit }, (req.query.sort && {
                 orderBy: {
-                    [req.query.sort]: req.query.order || 'asc'
-                }
+                    [req.query.sort]: req.query.order || "asc",
+                },
             })), (options.populateFields && { include: options.populateFields })));
             // 4) Get total count for pagination
             // @ts-ignore - Dynamic access to Prisma models
@@ -163,7 +163,7 @@ const getAllWithFilters = (model, filterFields = [], options = {}) => {
                     total,
                     page,
                     pages: Math.ceil(total / limit),
-                    limit
+                    limit,
                 },
                 data: {
                     [model]: docs,

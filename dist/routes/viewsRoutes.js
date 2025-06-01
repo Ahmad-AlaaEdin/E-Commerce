@@ -23,6 +23,7 @@ viewsRouter.get("/orders", authController_1.isLoggedIn, (req, res) => {
 viewsRouter.get("/logout", authController_1.logout);
 viewsRouter.get("/signup", viewsController_1.getSignupForm);
 viewsRouter.get("/login", viewsController_1.getLoginForm);
+viewsRouter.get("/products", viewsController_1.getAllProducts);
 viewsRouter.get("/", viewsController_1.getOverview);
 viewsRouter.get("/profile", authController_1.isLoggedIn, viewsController_1.getAccount);
 viewsRouter.get("/product/:id", viewsController_1.getProduct);

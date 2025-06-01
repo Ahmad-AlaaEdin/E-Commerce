@@ -1,0 +1,101 @@
+<%- contentFor('body') %>
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/<%= product.category.slug %>"><%= product.category.name %></a></li>
+            <% if (product.subCategory) { %>
+                <li class="breadcrumb-item"><a href="/<%= product.category.slug %>/<%= product.subCategory.slug %>"><%= product.subCategory.name %></a></li>
+            <% } %>
+            <li class="breadcrumb-item active" aria-current="page"><%= product.name %></li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-image mb-4">
+                <img src="<%= product.image %>" alt="<%= product.name %>" class="img-fluid rounded">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-3"><%= product.name %></h1>
+            <p class="lead mb-4">$<%= product.price.toFixed(2) %></p>
+            
+            <div class="mb-4">
+                <h5>Description</h5>
+                <p><%= product.description %></p>
+            </div>
+
+            <div class="mb-4">
+                <% if (product.stock > 0) { %>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="input-group me-3" style="width: 130px;">
+                            <button class="btn btn-outline-secondary decrement" type="button">-</button>
+                            <input type="number" class="form-control text-center quantity-input" value="1" min="1" max="<%= product.stock %>" data-product-id="<%= product.id %>">
+                            <button class="btn btn-outline-secondary increment" type="button">+</button>
+                        </div>
+                        <span class="text-muted"><%= product.stock %> items in stock</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="addToCart('<%= product.id %>')">
+                        Add to Cart
+                    </button>
+                <% } else { %>
+                    <button class="btn btn-secondary" disabled>Out of Stock</button>
+                <% } %>
+            </div>
+
+            <div class="product-meta">
+                <p class="mb-2">
+                    <strong>Category:</strong> 
+                    <a href="/<%= product.category.slug %>"><%= product.category.name %></a>
+                </p>
+                <% if (product.subCategory) { %>
+                    <p class="mb-2">
+                        <strong>Subcategory:</strong>
+                        <a href="/<%= product.category.slug %>/<%= product.subCategory.slug %>"><%= product.subCategory.name %></a>
+                    </p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <% if (relatedProducts && relatedProducts.length > 0) { %>
+        <section class="related-products mt-5">
+            <h3 class="mb-4">Related Products</h3>
+            <div class="row">
+                <% relatedProducts.forEach(relatedProduct => { %>
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                            <img src="<%= relatedProduct.image %>" class="card-img-top" alt="<%= relatedProduct.name %>">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= relatedProduct.name %></h5>
+                                <p class="card-text"><%= relatedProduct.description.substring(0, 100) %>...</p>
+                                <p class="card-text"><strong>$<%= relatedProduct.price.toFixed(2) %></strong></p>
+                                <a href="/products/<%= relatedProduct.id %>" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </section>
+    <% } %>
+</div>
+
+<style>
+.product-image img {
+    max-height: 500px;
+    width: 100%;
+    object-fit: contain;
+}
+
+.quantity-input {
+    text-align: center;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+</style> 
