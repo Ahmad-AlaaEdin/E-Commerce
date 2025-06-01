@@ -11,12 +11,12 @@ export const getMyCart = async (
   try {
     // For guest users, cart will be handled client-side
     if (!req.user) {
-      res.status(200).json({ 
-        status: "success", 
-        data: { 
+      res.status(200).json({
+        status: "success",
+        data: {
           cart: null,
-          isGuest: true
-        } 
+          isGuest: true,
+        },
       });
       return;
     }
@@ -31,17 +31,19 @@ export const getMyCart = async (
         },
       },
     });
-    
+
     // Calculate total
-    const total = cart?.items.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
-    
-    res.status(200).json({ 
-      status: "success", 
-      data: { 
+    const total =
+      cart?.items.reduce((sum, item) => sum + item.price * item.quantity, 0) ||
+      0;
+
+    res.status(200).json({
+      status: "success",
+      data: {
         cart,
         total,
-        isGuest: false
-      } 
+        isGuest: false,
+      },
     });
   } catch (error) {
     next(error);
@@ -56,9 +58,9 @@ export const addToCart = async (
 ): Promise<void> => {
   try {
     if (!req.user) {
-      res.status(200).json({ 
+      res.status(200).json({
         status: "success",
-        data: { isGuest: true }
+        data: { isGuest: true },
       });
       return;
     }
@@ -71,7 +73,7 @@ export const addToCart = async (
 
     // Check product exists and has enough stock
     const product = await prisma.product.findUnique({
-      where: { id: productId }
+      where: { id: productId },
     });
 
     if (!product) {
@@ -99,36 +101,41 @@ export const addToCart = async (
     if (existingItem) {
       // Check if total quantity exceeds stock
       if (existingItem.quantity + quantity > product.stock) {
-        next(new AppError(`Cannot add more items. Only ${product.stock} available`, 400));
+        next(
+          new AppError(
+            `Cannot add more items. Only ${product.stock} available`,
+            400
+          )
+        );
         return;
       }
 
       cartItem = await prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { 
+        data: {
           quantity: existingItem.quantity + quantity,
-          price: product.price // Update price in case it changed
+          price: product.price, // Update price in case it changed
         },
-        include: { product: true }
+        include: { product: true },
       });
     } else {
       cartItem = await prisma.cartItem.create({
-        data: { 
-          cartId: cart.id, 
-          productId, 
+        data: {
+          cartId: cart.id,
+          productId,
           quantity,
-          price: product.price 
+          price: product.price,
         },
-        include: { product: true }
+        include: { product: true },
       });
     }
 
-    res.status(200).json({ 
-      status: "success", 
-      data: { 
+    res.status(200).json({
+      status: "success",
+      data: {
         cartItem,
-        isGuest: false 
-      } 
+        isGuest: false,
+      },
     });
   } catch (error) {
     next(error);
@@ -143,9 +150,9 @@ export const removeFromCart = async (
 ): Promise<void> => {
   try {
     if (!req.user) {
-      res.status(200).json({ 
+      res.status(200).json({
         status: "success",
-        data: { isGuest: true }
+        data: { isGuest: true },
       });
       return;
     }
@@ -154,12 +161,14 @@ export const removeFromCart = async (
 
     // Verify the item belongs to the user's cart
     const cartItem = await prisma.cartItem.findFirst({
-      where: { 
+      where: {
         id: itemId,
         cart: {
-          userId: req.user.id
-        }
-      }
+          is: {
+            userId: req.user.id,
+          },
+        },
+      },
     });
 
     if (!cartItem) {
@@ -168,7 +177,18 @@ export const removeFromCart = async (
     }
 
     await prisma.cartItem.delete({ where: { id: itemId } });
-    res.status(204).json({ status: "success", data: null });
+    const cart = await prisma.cart.findUnique({
+      where: { userId: req.user.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+    console.log(cart);
+    res.status(200).json({ status: "success", data: cart });
   } catch (error) {
     next(error);
   }
@@ -182,14 +202,16 @@ export const clearCart = async (
 ): Promise<void> => {
   try {
     if (!req.user) {
-      res.status(200).json({ 
+      res.status(200).json({
         status: "success",
-        data: { isGuest: true }
+        data: { isGuest: true },
       });
       return;
     }
 
-    const cart = await prisma.cart.findUnique({ where: { userId: req.user.id } });
+    const cart = await prisma.cart.findUnique({
+      where: { userId: req.user.id },
+    });
     if (cart) {
       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
     }
@@ -216,13 +238,13 @@ export const updateCartItem = async (
 
   // Verify the item belongs to the user's cart and check stock
   const cartItem = await prisma.cartItem.findFirst({
-    where: { 
+    where: {
       id: itemId,
       cart: {
-        userId: req.user.id
-      }
+        userId: req.user.id,
+      },
     },
-    include: { product: true }
+    include: { product: true },
   });
 
   if (!cartItem) {
@@ -230,15 +252,20 @@ export const updateCartItem = async (
   }
 
   if (quantity > cartItem.product.stock) {
-    return next(new AppError(`Cannot update quantity. Only ${cartItem.product.stock} available`, 400));
+    return next(
+      new AppError(
+        `Cannot update quantity. Only ${cartItem.product.stock} available`,
+        400
+      )
+    );
   }
 
   try {
     const updatedCartItem = await prisma.cartItem.update({
       where: { id: itemId },
-      data: { 
+      data: {
         quantity,
-        price: cartItem.product.price // Update price in case it changed
+        price: cartItem.product.price, // Update price in case it changed
       },
       include: { product: true },
     });
@@ -272,18 +299,22 @@ export const mergeGuestCart = async (
 
     // Process each item from the guest cart
     for (const item of items) {
-      await addToCart({
-        ...req,
-        body: {
-          productId: item.productId,
-          quantity: item.quantity
-        }
-      } as Request, res, next);
+      await addToCart(
+        {
+          ...req,
+          body: {
+            productId: item.productId,
+            quantity: item.quantity,
+          },
+        } as Request,
+        res,
+        next
+      );
     }
 
     res.status(200).json({
       status: "success",
-      message: "Guest cart merged successfully"
+      message: "Guest cart merged successfully",
     });
   } catch (error) {
     next(error);

@@ -1,7 +1,7 @@
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="/">E-Commerce</a>
+            <a class="navbar-brand" href="/">Techno</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -20,15 +20,13 @@
                 <ul class="navbar-nav">
                     <% if (locals.user) { %>
                         <li class="nav-item">
-                            <a class="nav-link" href="/cart">
-                                Cart
-                            </a>
+                            <%- include('miniCart') %>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/profile">Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/logout">Logout</a>
+                            <a class="nav-link nav__el--logout" href="/logout">Logout</a>
                         </li>
                     <% } else { %>
                         <li class="nav-item">
@@ -42,4 +40,27 @@
             </div>
         </div>
     </nav>
-</header> 
+</header>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Add cart service script -->
+<script src="/js/cartService.js"></script>
+
+<script>
+    // Initialize cart on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const cart = await cartService.getCart();
+            cartService.updateCartUI(cart);
+        } catch (error) {
+            console.error('Error initializing cart:', error);
+        }
+    });
+
+    // Handle login completion
+    document.addEventListener('loginComplete', () => {
+        cartService.mergeGuestCart();
+    });
+</script> 

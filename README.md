@@ -1,100 +1,144 @@
-# 🛒 E-Commerce Platform
+# 🛍️ E-Commerce Platform
 
-A modern E-Commerce web application built with Node.js, Express, TypeScript, Prisma ORM, and PostgreSQL. This project supports user authentication, product management, shopping cart, order processing, payments, and more.
+A robust and modern E-Commerce web application built with cutting-edge technologies. This platform provides a complete solution for online retail operations, featuring user authentication, product management, shopping cart functionality, secure payments, and more.
 
----
+## 🚀 Key Features
 
-## ✨ Features
+- **🔐 User Authentication & Authorization**
+  - Local authentication with email and password
+  - Google OAuth integration
+  - JWT-based session management
+  - Role-based access control (Admin/User)
 
-- **User Authentication**: Register, login, JWT-based authentication, and user profile management.
-- **Product Catalog**: Categories, subcategories, and products with images, descriptions, and prices.
-- **Shopping Cart**: Add, update, and remove items from the cart.
-- **Order Management**: Place orders, view order history, and manage order status.
-- **Payment Integration**: Payment processing with Stripe + webhook support.
-- **Address Management**: Save and update shipping addresses.
-- **Admin Features**: Manage products, categories, and users (role-based access).
-- **RESTful API**: Clean API endpoints for frontend or external apps.
-- **EJS Views**: Server-side rendered pages for main site navigation.
-- **Cloudinary Integration**: Image uploads and storage.
-- **Prisma ORM**: Type-safe database access and migrations.
-- **TypeScript**: Strong typing for clean, maintainable code.
+- **📦 Product Management**
+  - Comprehensive product catalog
+  - Category and subcategory organization
+  - Image management with Cloudinary integration
+  - Product search and filtering
 
----
+- **🛒 Shopping Experience**
+  - Interactive shopping cart
+  - Secure checkout process
+  - Multiple payment options via Stripe
+  - Order tracking and history
 
-## ⚙️ Tech Stack
+- **👤 User Features**
+  - Profile management
+  - Address book functionality
+  - Order history
+  - Wishlist management
 
-- **Backend**: Node.js, Express.js, TypeScript
-- **Database**: PostgreSQL (with Prisma ORM)
-- **Authentication**: JWT
-- **Templating**: EJS
-- **File Uploads**: Cloudinary
-- **Others**: Morgan (logging), Cookie-Parser, Slugify, Bcrypt
+- **⚙️ Admin Dashboard**
+  - Product inventory management
+  - Order processing and tracking
+  - User management
+  - Analytics and reporting
 
----
+## 💻 Technical Stack
 
-## 🚀 Getting Started
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Language**: TypeScript
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: Passport.js, JWT
 
-### ✅ Prerequisites
+### Frontend
+- **Template Engine**: EJS
+- **Layouts**: Express-EJS-Layouts
 
-- Node.js (v16+ recommended)
-- PostgreSQL
-- [Cloudinary](https://cloudinary.com/) account
-- Stripe account
+### Storage & Services
+- **Image Storage**: Cloudinary
+- **Caching**: Redis
+- **Payments**: Stripe
+- **Email**: Nodemailer
 
----
+### Development Tools
+- **Build Tool**: TypeScript Compiler
+- **Development Server**: Nodemon
+- **Version Control**: Git
+- **API Testing**: Postman (recommended)
 
-### 🛠 Installation
+## 🛠️ Development Setup
 
-1. **Clone the repository:**
+1. **Prerequisites**
+   - Node.js (v16 or higher)
+   - PostgreSQL database
+   - Redis server
+   - Cloudinary account
+   - Stripe account
+
+2. **Installation**
    ```bash
-   git clone https://github.com/yourusername/e-commerce.git
-   cd e-commerce
+   # Clone the repository
+   git clone <repository-url>
+   
+   # Install dependencies
+   npm install
+   
+   # Generate Prisma client
+   npx prisma generate
+   
+   # Run database migrations
+   npx prisma migrate dev
    ```
 
-## 🔧 Installation Steps
+3. **Environment Configuration**
+   Create a `.env` file with the following variables:
+   ```env
+   PORT=3000
+   NODE_ENV=development
+   DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
+   JWT_SECRET=your_jwt_secret
+   CLOUDINARY_NAME=your_cloudinary_name
+   CLOUDINARY_KEY=your_cloudinary_key
+   CLOUDINARY_SECRET=your_cloudinary_secret
+   STRIPE_SECRET_KEY=your_stripe_secret_key
+   ```
 
-### 1. Install dependencies:
+4. **Running the Application**
+   ```bash
+   # Development mode
+   npm run dev
+   
+   # Production build
+   npm run build
+   npm start
+   ```
 
-```bash
-npm install
-```
-
-### 2. Set up environment variables:
-
-Create a `.env` file in the root directory and add the following:
-
-```env
-PORT=3000
-NODE_ENV=development
-DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=90d
-CLOUDINARY_NAME=your_cloudinary_name
-CLOUDINARY_KEY=your_cloudinary_key
-CLOUDINARY_SECRET=your_cloudinary_secret
-BREVO_HOST=your_brevo_host
-BREVO_PORT=your_brevo_port
-BREVO_LOGIN=your_brevo_login
-BREVO_PASSWORD=your_brevo_password
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+## 📦 Project Structure
 
 ```
-
-### 3. Run migrations:
-
-```bash
-npx prisma migrate dev
+e-commerce/
+├── src/               # Source code
+├── prisma/            # Database schema and migrations
+├── dist/             # Compiled TypeScript
+├── node_modules/     # Dependencies
+└── public/           # Static assets
 ```
 
-### 4. Start the server:
+## 🔒 Security Features
 
-```bash
-npm start
-```
+- Password hashing with bcrypt
+- JWT-based authentication
+- Session management
+- CSRF protection
+- Rate limiting
+- Input validation
+- Secure headers
 
-## 📊 Entity Relationship Diagram (ERD)
+## 🤝 Contributing
 
-#### Below is a simplified view of the database structure:
+Contributions are welcome! Please feel free to submit pull requests.
 
-![ERD](prisma/ERD.jpg)
+## 📝 License
+
+This project is licensed under the ISC License.
+
+## 🙏 Acknowledgments
+
+- Express.js team
+- Prisma team
+- TypeScript team
+- All contributors and maintainers 

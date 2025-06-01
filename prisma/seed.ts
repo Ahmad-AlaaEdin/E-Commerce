@@ -11,9 +11,18 @@ async function main() {
       slug: "hardware-components",
       description: "High-performance desktop computers for work and gaming.",
       subCategories: [
-        { name: "Graphic Cards" },
-        { name: "Motherboard" },
-        { name: "Processors" },
+        { 
+          name: "Graphic Cards",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/gpu_icon.png"
+        },
+        { 
+          name: "Motherboard",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/motherboard_icon.png"
+        },
+        { 
+          name: "Processors",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/cpu_icon.png"
+        },
       ],
       products: [
         { name: "Alienware Aurora R15", price: 2499.99, description: "High-end gaming desktop with RTX 4090.", image:"" },
@@ -31,8 +40,14 @@ async function main() {
       slug: "monitors",
       description: "High-resolution screens for work and entertainment.",
       subCategories: [
-        { name: "Gaming Monitors" },
-        { name: "Curved Monitors" },
+        { 
+          name: "Gaming Monitors",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/gaming_monitor_icon.png"
+        },
+        { 
+          name: "Curved Monitors",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/curved_monitor_icon.png"
+        },
       ],
       products: [
         { name: "LG UltraGear 32GP850", price: 499.99, description: "Gaming monitor with 165Hz refresh rate.", image:"" },
@@ -46,8 +61,14 @@ async function main() {
       slug: "network",
       description: "Routers, modems, and networking accessories.",
       subCategories: [
-        { name: "Routers" },
-        { name: "Switches" },
+        { 
+          name: "Routers",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/router_icon.png"
+        },
+        { 
+          name: "Switches",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/switch_icon.png"
+        },
       ],
       products: [
         {name:"TP-Link 300Mbps (TD-W9960)",price:199.99,description:"High-speed Wi-Fi router with 300 Mbps downlink and 100 Mbps uplink.",image:"https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/TP-Link_300Mbps_TD-W9960_c4gpzp.jpg"},
@@ -59,9 +80,14 @@ async function main() {
       slug: "accessories",
       description: "Keyboards, mice, webcams, and other peripherals.",
       subCategories: [
-        { name: "Keyboards" },
-        { name: "Mice" },
-        
+        { 
+          name: "Keyboards",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/keyboard_icon.png"
+        },
+        { 
+          name: "Mice",
+          icon: "https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/icons/mouse_icon.png"
+        },
       ],
       products: [
         { name: "Logitech G502 LIGHTSPEED", price: 99.99, description: "Wireless ergonomic mouse.", image:"https://res.cloudinary.com/dkaflvjbb/image/upload/v1745007631/G502_LIGHTSPEED_scbyds.webp" },
@@ -91,6 +117,7 @@ async function main() {
             create: category.subCategories.map((sub) => ({
               name: sub.name,
               slug: sub.name.toLowerCase().replace(/\s+/g, "-"),
+              icon: sub.icon,
             })),
           },
           products: {

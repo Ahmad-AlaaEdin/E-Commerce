@@ -7,6 +7,7 @@ import {
   getCategoryProducts,
   getSubCategoryProducts,
   getProduct,
+  getAllProducts,
 } from "../controllers/viewsController";
 import {
   logout,
@@ -35,6 +36,7 @@ viewsRouter.get("/orders", isLoggedIn, (req, res) => {
 viewsRouter.get("/logout", logout);
 viewsRouter.get("/signup", getSignupForm);
 viewsRouter.get("/login", getLoginForm);
+viewsRouter.get("/products", getAllProducts);
 viewsRouter.get("/", getOverview);
 viewsRouter.get("/profile", isLoggedIn, getAccount);
 viewsRouter.get("/product/:id", getProduct);

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import prisma from "../config/prisma";
 import { Product } from "@prisma/client";
 import AppError from "../utils/appError";
@@ -37,29 +37,251 @@ export const createProduct = async (req: Request, res: Response) => {
   res.status(201).json(product);
 };
 
-export const getAllProducts = async (req: Request, res: Response) => {
-  const query = req.query.search as string | undefined;
+const ITEMS_PER_PAGE = 12;
 
-  const products: Product[] = await prisma.product.findMany({
-    where: {
-      name: query
-        ? {
-            contains: query,
-            mode: "insensitive" as const,
-          }
-        : undefined,
-    },
-  });
-
-  res.status(200).json(products);
+// Helper function to parse pagination parameters
+const getPaginationParams = (req: Request) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = ITEMS_PER_PAGE;
+  const skip = (page - 1) * limit;
+  return { page, limit, skip };
 };
 
-export const getProductById = async (req: Request, res: Response) => {
-  const product: Product | null = await prisma.product.findUnique({
-    where: { id: req.params.id },
-  });
-  if (!product) throw new AppError("Product not found", 404);
-  res.status(200).json(product);
+// Helper function to get sort parameters
+const getSortParams = (sortQuery: string | undefined) => {
+  switch (sortQuery) {
+    case 'price-asc':
+      return { price: 'asc' as const };
+    case 'price-desc':
+      return { price: 'desc' as const };
+    case 'name-asc':
+      return { name: 'asc' as const };
+    case 'name-desc':
+      return { name: 'desc' as const };
+    default:
+      return { createdAt: 'desc' as const };
+  }
+};
+
+// Get all products with pagination and sorting
+export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { page, limit, skip } = getPaginationParams(req);
+    const sort = getSortParams(req.query.sort as string);
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        skip,
+        take: limit,
+        orderBy: sort,
+        include: {
+          category: true,
+          subCategory: true,
+        },
+      }),
+      prisma.product.count(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.render('pages/products', {
+      title: 'All Products',
+      products,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get products by category
+export const getProductsByCategory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { slug } = req.params;
+    const { page, limit, skip } = getPaginationParams(req);
+    const sort = getSortParams(req.query.sort as string);
+
+    const category = await prisma.category.findUnique({
+      where: { slug },
+      include: { subCategories: true },
+    });
+
+    if (!category) {
+      return next(new AppError('Category not found', 404));
+    }
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where: { categoryId: category.id },
+        skip,
+        take: limit,
+        orderBy: sort,
+        include: {
+          category: true,
+          subCategory: true,
+        },
+      }),
+      prisma.product.count({
+        where: { categoryId: category.id },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.render('pages/products', {
+      title: category.name,
+      category,
+      products,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get products by subcategory
+export const getProductsBySubCategory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { categorySlug, subCategorySlug } = req.params;
+    const { page, limit, skip } = getPaginationParams(req);
+    const sort = getSortParams(req.query.sort as string);
+
+    const category = await prisma.category.findUnique({
+      where: { slug: categorySlug },
+    });
+
+    if (!category) {
+      return next(new AppError('Category not found', 404));
+    }
+
+    const subCategory = await prisma.subCategory.findFirst({
+      where: {
+        slug: subCategorySlug,
+        categoryId: category.id,
+      },
+    });
+
+    if (!subCategory) {
+      return next(new AppError('Subcategory not found', 404));
+    }
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where: { subCategoryId: subCategory.id },
+        skip,
+        take: limit,
+        orderBy: sort,
+        include: {
+          category: true,
+          subCategory: true,
+        },
+      }),
+      prisma.product.count({
+        where: { subCategoryId: subCategory.id },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.render('pages/products', {
+      title: `${subCategory.name} - ${category.name}`,
+      category,
+      subCategory,
+      products,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Search products
+export const searchProducts = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const searchQuery = req.query.q as string;
+    const { page, limit, skip } = getPaginationParams(req);
+    const sort = getSortParams(req.query.sort as string);
+
+    if (!searchQuery) {
+      return res.redirect('/products');
+    }
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where: {
+          OR: [
+            { name: { contains: searchQuery, mode: 'insensitive' } },
+            { description: { contains: searchQuery, mode: 'insensitive' } },
+          ],
+        },
+        skip,
+        take: limit,
+        orderBy: sort,
+        include: {
+          category: true,
+          subCategory: true,
+        },
+      }),
+      prisma.product.count({
+        where: {
+          OR: [
+            { name: { contains: searchQuery, mode: 'insensitive' } },
+            { description: { contains: searchQuery, mode: 'insensitive' } },
+          ],
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.render('pages/products', {
+      title: `Search Results: ${searchQuery}`,
+      products,
+      searchQuery,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get product details
+export const getProductDetails = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        subCategory: true,
+      },
+    });
+
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    // Get related products from the same category
+    const relatedProducts = await prisma.product.findMany({
+      where: {
+        categoryId: product.categoryId,
+        NOT: { id: product.id },
+      },
+      take: 4,
+    });
+
+    res.render('pages/product-details', {
+      title: product.name,
+      product,
+      relatedProducts,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const deleteProduct = async (req: Request, res: Response) => {

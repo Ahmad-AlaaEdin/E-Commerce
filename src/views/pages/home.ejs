@@ -1,68 +1,137 @@
 <%- contentFor('body') %>
 
 <div class="hero-section bg-light py-5 mb-4">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h1>Welcome to E-Commerce</h1>
-                <p class="lead">Discover amazing products at great prices.</p>
-                <a href="/products" class="btn btn-primary">Shop Now</a>
-            </div>
-            <div class="col-md-6">
-                <img src="/img/hero-image.jpg" alt="Shopping" class="img-fluid rounded">
-            </div>
-        </div>
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <h1>Welcome to E-Commerce</h1>
+        <p class="lead">Discover amazing products at great prices.</p>
+        <a href="/products" class="btn btn-dark">Shop Now</a>
+      </div>
+      <div class="col-md-6">
+        <img src="/img/hero.jpg" alt="Shopping" class="img-fluid rounded" />
+      </div>
     </div>
+  </div>
 </div>
 
-<section class="featured-products mb-5">
-    <div class="container">
-        <h2 class="mb-4">Featured Products</h2>
+<section class="categories-tabs mb-5">
+  <div class="container">
+    <h2 class="mb-4 mx-auto">Browse Categories</h2>
+    <% if (locals.categories && categories.length > 0) { %>
+    <ul class="nav nav-tabs mb-4" id="categoryTabs" role="tablist">
+      <% categories.forEach((category, index) => { %>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link <%= index === 0 ? 'active' : '' %>"
+          id="<%= category.slug %>-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#<%= category.slug %>"
+          type="button"
+          role="tab"
+          aria-controls="<%= category.slug %>"
+          aria-selected="<%= index === 0 ? 'true' : 'false' %>"
+        >
+          <%= category.name %>
+        </button>
+      </li>
+      <% }) %>
+    </ul>
+    <div class="tab-content" id="categoryTabsContent">
+      <% categories.forEach((category, index) => { %>
+      <div
+        class="tab-pane fade <%= index === 0 ? 'show active' : '' %>"
+        id="<%= category.slug %>"
+        role="tabpanel"
+        aria-labelledby="<%= category.slug %>-tab"
+      >
         <div class="row">
-            <% if (locals.featuredProducts && featuredProducts.length > 0) { %>
-                <% featuredProducts.forEach(product => { %>
-                    <div class="col-md-3 mb-4">
-                        <div class="card h-100">
-                            <img src="<%= product.image %>" class="card-img-top" alt="<%= product.name %>">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= product.name %></h5>
-                                <p class="card-text"><%= product.description.substring(0, 100) %>...</p>
-                                <p class="card-text"><strong>$<%= product.price.toFixed(2) %></strong></p>
-                                <a href="/product/<%= product.id %>" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <div class="col">
-                    <p>No featured products available.</p>
+          <div class="col-md-4">
+            <div class="category-description mb-4">
+              <h3><%= category.name %></h3>
+              <p><%= category.description %></p>
+              <a href="/<%= category.slug %>" class="btn btn-outline-dark"
+                >View All</a
+              >
+            </div>
+          </div>
+          <div class="col-md-8">
+            <% if (category.subCategories && category.subCategories.length > 0)
+            { %>
+            <div class="row">
+              <% category.subCategories.forEach(subCategory => { %>
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <% if (subCategory.icon) { %>
+                    <img
+                      src="<%= subCategory.icon %>"
+                      alt="<%= subCategory.name %>"
+                      class="mb-3"
+                      style="height: 48px; width: auto"
+                    />
+                    <% } %>
+                    <h5 class="card-title"><%= subCategory.name %></h5>
+                    <a
+                      href="/<%= category.slug %>/<%= subCategory.slug %>"
+                      class="btn btn-sm btn-outline-secondary"
+                    >
+                      Browse <%= subCategory.name %>
+                    </a>
+                  </div>
                 </div>
+              </div>
+              <% }) %>
+            </div>
+            <% } else { %>
+            <p>No subcategories available.</p>
             <% } %>
+          </div>
         </div>
+      </div>
+      <% }) %>
     </div>
+    <% } else { %>
+    <div class="alert alert-info">No categories available.</div>
+    <% } %>
+  </div>
 </section>
 
-<section class="categories mb-5">
-    <div class="container">
-        <h2 class="mb-4">Shop by Category</h2>
-        <div class="row">
-            <% if (locals.categories && categories.length > 0) { %>
-                <% categories.forEach(category => { %>
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= category.name %></h5>
-                                <p class="card-text"><%= category.description %></p>
-                                <a href="/categories/<%= category.id %>" class="btn btn-outline-primary">Browse <%= category.name %></a>
-                            </div>
-                        </div>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <div class="col">
-                    <p>No categories available.</p>
-                </div>
-            <% } %>
+<section class="featured-products mb-5">
+  <div class="container">
+    <h2 class="mb-4">Featured Products</h2>
+    <div class="row">
+      <% if (locals.featuredProducts && featuredProducts.length > 0) { %> <%
+      featuredProducts.forEach(product => { %>
+      <div class="col-md-3 mb-4 d-flex">
+        <div class="card h-100 w-100 d-flex flex-column">
+          <img
+            src="<%= product.image %>"
+            class="card-img-top"
+            alt="<%= product.name %>"
+            style="height: 200px; object-fit: contain"
+          />
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title"><%= product.name %></h5>
+            <p class="card-text flex-grow-1">
+              <%= product.description.length > 100 ?
+              product.description.substring(0, 100) + "..." :
+              product.description %>
+            </p>
+            <p class="card-text">
+              <strong>$<%= product.price.toFixed(2) %></strong>
+            </p>
+            <a href="/product/<%= product.id %>" class="btn btn-dark mt-auto"
+              >View Details</a
+            >
+          </div>
         </div>
+      </div>
+      <% }) %> <% } else { %>
+      <div class="col">
+        <p>No featured products available.</p>
+      </div>
+      <% } %>
     </div>
-</section> 
+  </div>
+</section>

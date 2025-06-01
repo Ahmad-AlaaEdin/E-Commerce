@@ -1,9 +1,22 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
-import { User } from "@prisma/client";
 
-interface AuthRequest extends Request {
-  user?: User;
+
+
+export const getAllProducts = async (req: Request, res: Response) => {
+ 
+  const products = await prisma.product.findMany({
+    include: {
+      category: true,
+      subCategory: true,
+    },
+
+  });
+ 
+  res.render("pages/products", {
+    title: "Products",
+    products, 
+  })
 }
 
 export const getLoginForm = (req: Request, res: Response) => {
@@ -28,9 +41,10 @@ export const getOverview = async (req: Request, res: Response) => {
       take: 8,
     });
 
-    // Get all categories
+    // Get all categories with their subcategories
     const categories = await prisma.category.findMany({
       include: {
+        subCategories: true,
         _count: {
           select: {
             products: true,
@@ -111,12 +125,15 @@ export const getSubCategoryProducts = async (req: Request, res: Response) => {
       return res.status(404).render("pages/error", {
         title: "Not Found",
         message: "Subcategory not found!",
+       
       });
     }
 
-    res.render("pages/subcategory", {
+    res.render("pages/products", {
       title: subCategory.name,
       subCategory,
+      products:subCategory.products,
+      category:subCategory.category,
     });
   } catch (error) {
     console.error("Error in getSubCategoryProducts:", error);
@@ -157,7 +174,7 @@ export const getProduct = async (req: Request, res: Response) => {
       take: 4,
     });
 
-    res.render("pages/product", {
+    res.render("pages/product-details", {
       title: product.name,
       product,
       relatedProducts,
@@ -171,7 +188,7 @@ export const getProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const getCheckout = async (req: AuthRequest, res: Response) => {
+export const getCheckout = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.redirect("/login");

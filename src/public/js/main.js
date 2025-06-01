@@ -1,5 +1,26 @@
+import { login, logout } from "./auth.js";
+
 // Enable Bootstrap tooltips
 document.addEventListener("DOMContentLoaded", function () {
+  const loginForm = document.querySelector(".form--login");
+  const logOutBtn = document.querySelector(".nav__el--logout");
+
+  if (loginForm)
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      console.log("clicked loginForm");
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      login(email, password);
+    });
+
+  if (logOutBtn) {
+    logOutBtn.addEventListener("click", function (event) {
+      event.preventDefault();
+      logout();
+    });
+  }
+
   var tooltipTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="tooltip"]')
   );
@@ -7,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return new bootstrap.Tooltip(tooltipTriggerEl);
   });
 });
+// DOM ELEMENTS
 
 // Add to cart functionality
 function addToCart(productId) {

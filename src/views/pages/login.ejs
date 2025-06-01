@@ -12,8 +12,9 @@
                             <%= error %>
                         </div>
                     <% } %>
+                    <div class="alert-container"></div>
 
-                    <form action="/api/v1/users/login" method="POST" class="mb-4">
+                    <form   method="POST" class="mb-4 form--login">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email address</label>
                             <input type="email" class="form-control" id="email" name="email" required>

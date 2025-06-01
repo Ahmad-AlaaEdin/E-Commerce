@@ -1,24 +1,27 @@
 import { Router } from "express";
 import {
-  createProduct,
   getAllProducts,
-  getProductById,
-  updateProduct,
-  deleteProduct,
-  uploadProductPhoto,
+  getProductsByCategory,
+  getProductsBySubCategory,
+  searchProducts,
+  getProductDetails,
 } from "../controllers/productController";
 
-const productRoutes: Router = Router();
+const router = Router();
 
-productRoutes
-  .route("/")
-  .post(uploadProductPhoto, createProduct)
-  .get(getAllProducts);
+// Search products
+router.get("/search", searchProducts);
 
-productRoutes
-  .route("/:id")
-  .get(getProductById)
-  .patch(uploadProductPhoto, updateProduct)
-  .delete(deleteProduct);
+// Get all products
+router.get("/", getAllProducts);
 
-export default productRoutes;
+// Get product details
+router.get("/details/:id", getProductDetails);
+
+// Get products by category
+router.get("/:slug", getProductsByCategory);
+
+// Get products by subcategory
+router.get("/:categorySlug/:subCategorySlug", getProductsBySubCategory);
+
+export default router;
